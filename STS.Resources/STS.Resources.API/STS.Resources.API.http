@@ -1,0 +1,6 @@
+@STS.Resources.API_HostAddress = http://localhost:5166
+
+GET {{STS.Resources.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
