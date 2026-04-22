@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace STS.Resources.Domain.Entities;
 
-[Index(nameof(OwnerId), IsUnique = true)]
+[Index(nameof(OwnerId))]
 public class League
 {
     public Guid Id { get; set; }
