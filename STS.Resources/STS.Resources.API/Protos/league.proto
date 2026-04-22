@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option csharp_namespace = "STS.Resources.API.Grpc";
+
+package league;
+
+import "google/protobuf/timestamp.proto";
+
+service LeagueService {
+  rpc GetLeagues (GetLeaguesRequest) returns (GetLeaguesResponse);
+  rpc GetLeague (GetLeagueRequest) returns (LeagueResponse);
+  rpc CreateLeague (CreateLeagueRequest) returns (LeagueResponse);
+}
+
+message GetLeaguesRequest {
+  string owner_id = 1;
+}
+
+message GetLeaguesResponse {
+  repeated LeagueResponse leagues = 1;
+}
+
+message GetLeagueRequest {
+  string id = 1;
+}
+
+message CreateLeagueRequest {
+  string owner_id = 1;
+  string name = 2;
+  google.protobuf.Timestamp start_date = 3;
+  string logo_url = 4;
+}
+
+message LeagueResponse {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp start_date = 5;
+  string logo_url = 6;
+}
