@@ -19,8 +19,9 @@ public static class BuilderExtentions
         });
         builder.Services.AddGrpc();
         builder.Services.AddScoped<ILeagueRepository, LeagueRepository>();
+        builder.Services.AddScoped<ITeamRepository, TeamRepository>();
         builder.Services.AddScoped<ILeagueService, LeagueService>();
-        builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ResourcesDb"));
+        builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ResourcesDb")!);
         return builder;
     }
 }
