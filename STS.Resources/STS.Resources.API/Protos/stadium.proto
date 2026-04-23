@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option csharp_namespace = "STS.Resources.API.Grpc";
+
+package stadium;
+
+import "google/protobuf/empty.proto";
+
+service StadiumService {
+  rpc GetStadiums (GetStadiumsRequest) returns (GetStadiumsResponse);
+  rpc GetStadium (GetStadiumRequest) returns (StadiumResponse);
+  rpc CreateStadium (CreateStadiumRequest) returns (StadiumResponse);
+  rpc UpdateStadium (UpdateStadiumRequest) returns (StadiumResponse);
+  rpc DeleteStadium (DeleteStadiumRequest) returns (google.protobuf.Empty);
+}
+
+message GetStadiumsRequest {
+  string league_id = 1;
+}
+
+message GetStadiumsResponse {
+  repeated StadiumResponse stadiums = 1;
+}
+
+message GetStadiumRequest {
+  string id = 1;
+}
+
+message CreateStadiumRequest {
+  string league_id = 1;
+  string name = 2;
+  optional string logo = 3;
+}
+
+message UpdateStadiumRequest {
+  string id = 1;
+  string name = 2;
+  optional string logo = 3;
+}
+
+message DeleteStadiumRequest {
+  string id = 1;
+}
+
+message StadiumResponse {
+  string id = 1;
+  string league_id = 2;
+  string name = 3;
+  optional string logo = 4;
+}
