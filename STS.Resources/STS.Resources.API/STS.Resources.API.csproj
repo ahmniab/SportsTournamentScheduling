@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\league.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\team.proto" GrpcServices="Server" />
     <ProjectReference Include="..\STS.Resources.Application\STS.Resources.Application.csproj" />
     <ProjectReference Include="..\STS.Resources.Infrastructure\STS.Resources.Infrastructure.csproj" />
   </ItemGroup>
