@@ -8,6 +8,7 @@ public static class AppExtentions
     {
         app.MapGrpcService<LeagueGrpcService>();
         app.MapGrpcService<TeamGrpcService>();
+        app.MapGrpcService<StadiumGrpcService>();
         return app;
     }
 }

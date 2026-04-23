@@ -14,14 +14,16 @@ public static class BuilderExtentions
         {
             options.ListenLocalhost(5166, listenOptions =>
             {
-                listenOptions.Protocols = HttpProtocols.Http2; 
+                listenOptions.Protocols = HttpProtocols.Http2;
             });
         });
         builder.Services.AddGrpc();
         builder.Services.AddScoped<ILeagueRepository, LeagueRepository>();
         builder.Services.AddScoped<ITeamRepository, TeamRepository>();
+        builder.Services.AddScoped<IStadiumRepository, StadiumRepository>();
         builder.Services.AddScoped<ILeagueService, LeagueService>();
         builder.Services.AddScoped<ITeamService, TeamService>();
+        builder.Services.AddScoped<IStadiumService, StadiumService>();
         builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ResourcesDb")!);
         return builder;
     }
