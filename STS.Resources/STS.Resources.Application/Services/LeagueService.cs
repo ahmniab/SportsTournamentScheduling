@@ -7,11 +7,13 @@ public class LeagueService : ILeagueService
 {
     private readonly ILeagueRepository _leagueRepository;
     private readonly ITeamRepository _teamRepository;
+    private readonly IStadiumRepository _stadiumRepository;
 
-    public LeagueService(ILeagueRepository leagueRepository, ITeamRepository teamRepository)
+    public LeagueService(ILeagueRepository leagueRepository, ITeamRepository teamRepository, IStadiumRepository stadiumRepository)
     {
         _leagueRepository = leagueRepository;
         _teamRepository = teamRepository;
+        _stadiumRepository = stadiumRepository;
     }
 
     public async Task<League?> GetLeagueByIdAsync(Guid id)
@@ -36,7 +38,8 @@ public class LeagueService : ILeagueService
 
     public async Task DeleteLeagueAsync(Guid Id)
     {
-        await _leagueRepository.GetByIdAsync(Id);
+        await _teamRepository.DeleteTeamAsyncByLeagueIdAsync(Id);
+        await _stadiumRepository.DeleteStadiumAsyncByLeagueIdAsync(Id);
         await _leagueRepository.DeleteAsync(Id);
     }
 }

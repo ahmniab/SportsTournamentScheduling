@@ -46,4 +46,11 @@ public class TeamRepository : ITeamRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task DeleteTeamAsyncByLeagueIdAsync(Guid leagueId)
+    {
+        await _context.Teams
+            .Where(team => team.LeagueId == leagueId)
+            .ExecuteDeleteAsync();
+    }
 }
