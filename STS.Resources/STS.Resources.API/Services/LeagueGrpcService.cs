@@ -69,7 +69,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
             OwnerId = ownerId,
             Name = request.Name,
             StartDate = request.StartDate?.ToDateTime() ?? DateTime.UtcNow,
-            LogoUrl = string.IsNullOrWhiteSpace(request.LogoUrl) ? null : request.LogoUrl,
+            LogoUrl = request.LogoUrl,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -99,7 +99,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
 
         league.Name = request.Name;
         league.StartDate = request.StartDate?.ToDateTime() ?? league.StartDate;
-        league.LogoUrl = string.IsNullOrEmpty(request.LogoUrl) ? null : request.LogoUrl;
+        league.LogoUrl = request.LogoUrl;
 
         await leagueService.UpdateLeagueAsync(league);
 
@@ -118,14 +118,17 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
 
     private static LeagueResponse MapLeague(League league)
     {
-        return new LeagueResponse
+        var response = new LeagueResponse
         {
             Id = league.Id.ToString(),
             OwnerId = league.OwnerId.ToString(),
             Name = league.Name,
             CreatedAt = league.CreatedAt.ToTimestamp(),
             StartDate = league.StartDate.ToTimestamp(),
-            LogoUrl = league.LogoUrl ?? string.Empty
         };
+        if (!string.IsNullOrWhiteSpace(league.LogoUrl))
+            response.LogoUrl = league.LogoUrl;
+        
+        return response;
     }
 }
