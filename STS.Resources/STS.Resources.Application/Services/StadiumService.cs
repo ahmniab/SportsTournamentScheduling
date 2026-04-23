@@ -1,5 +1,7 @@
 using STS.Resources.Application.Interfaces;
+using STS.Resources.Application.Features.Stadium;
 using STS.Resources.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace STS.Resources.Application.Services;
 
@@ -12,28 +14,90 @@ public class StadiumService : IStadiumService
         _stadiumRepository = stadiumRepository;
     }
 
-    public async Task<Stadium?> GetStadiumByIdAsync(Guid stadiumId)
+    public async Task<Stadium> GetStadiumByIdAsync(string id)
     {
-        return await _stadiumRepository.GetStadiumByIdAsync(stadiumId);
+        if (!Guid.TryParse(id, out var stadiumGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(id));
+        }
+
+        return await _stadiumRepository.GetByIdAsync(stadiumGuid) ?? throw new KeyNotFoundException("Stadium was not found.");
     }
 
-    public async Task<IEnumerable<Stadium>> GetStadiumsByLeagueIdAsync(Guid leagueId)
+    public async Task<IEnumerable<Stadium>> GetStadiumsByLeagueIdAsync(string leagueId)
     {
-        return await _stadiumRepository.GetStadiumsByLeagueIdAsync(leagueId);
+        if (!Guid.TryParse(leagueId, out var leagueGuid))
+        {
+            throw new ArgumentException("league_id must be a valid GUID.", nameof(leagueId));
+        }
+
+        var stadiums = await _stadiumRepository.GetByLeagueIdAsync(leagueGuid);
+        return stadiums ?? throw new KeyNotFoundException("No stadiums were found for the requested league.");
     }
 
-    public async Task AddStadiumAsync(Stadium stadium)
+    public async Task<Stadium> CreateStadiumAsync(CreateStadiumCommand stadium)
     {
-        await _stadiumRepository.AddStadiumAsync(stadium);
+        if (!Guid.TryParse(stadium.LeagueId, out var leagueGuid))
+        {
+            throw new ArgumentException("league_id must be a valid GUID.", nameof(stadium.LeagueId));
+        }
+
+        if (string.IsNullOrWhiteSpace(stadium.Name))
+        {
+            throw new ArgumentException("name is required.", nameof(stadium.Name));
+        }
+
+        var newStadium = new Stadium
+        {
+            LeagueId = leagueGuid,
+            Name = stadium.Name,
+            Logo = stadium.Logo
+        };
+
+        return await _stadiumRepository.AddAsync(newStadium);
     }
 
-    public async Task UpdateStadiumAsync(Stadium stadium)
+    public async Task<Stadium> UpdateStadiumAsync(UpdateStadiumCommand stadium)
     {
-        await _stadiumRepository.UpdateStadiumAsync(stadium);
+        if (!Guid.TryParse(stadium.Id, out var stadiumGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(stadium.Id));
+        }
+
+        if (string.IsNullOrWhiteSpace(stadium.Name))
+        {
+            throw new ArgumentException("name is required.", nameof(stadium.Name));
+        }
+
+        try
+        {
+            var updatedStadium = new Stadium
+            {
+                Id = stadiumGuid,
+                Name = stadium.Name,
+                Logo = stadium.Logo
+            };
+
+            await _stadiumRepository.UpdateAsync(updatedStadium);
+            return updatedStadium;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new KeyNotFoundException("Stadium was not found or has been deleted.", ex);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException("Stadium was not found.", ex);
+        }
     }
 
-    public async Task DeleteStadiumAsync(Guid stadiumId)
+    public async Task DeleteStadiumAsync(string id)
     {
-        await _stadiumRepository.DeleteStadiumAsync(stadiumId);
+        if (!Guid.TryParse(id, out var stadiumGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(id));
+        }
+
+        await _stadiumRepository.DeleteAsync(stadiumGuid);
     }
 }

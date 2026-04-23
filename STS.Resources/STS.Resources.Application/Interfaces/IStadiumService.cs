@@ -1,12 +1,13 @@
 using STS.Resources.Domain.Entities;
+using STS.Resources.Application.Features.Stadium;
 
 namespace STS.Resources.Application.Interfaces;
 
 public interface IStadiumService
 {
-    Task<Stadium?> GetStadiumByIdAsync(Guid stadiumId);
-    Task<IEnumerable<Stadium>> GetStadiumsByLeagueIdAsync(Guid leagueId);
-    Task AddStadiumAsync(Stadium stadium);
-    Task UpdateStadiumAsync(Stadium stadium);
-    Task DeleteStadiumAsync(Guid stadiumId);
+    Task<IEnumerable<Stadium>> GetStadiumsByLeagueIdAsync(string leagueId);
+    Task<Stadium> GetStadiumByIdAsync(string id);
+    Task<Stadium> CreateStadiumAsync(CreateStadiumCommand stadium);
+    Task<Stadium> UpdateStadiumAsync(UpdateStadiumCommand stadium);
+    Task DeleteStadiumAsync(string id);
 }
