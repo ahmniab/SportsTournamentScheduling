@@ -6,6 +6,7 @@ namespace STS.Resources.Infrastructure.Persistence;
 public class ResourcesDbContext : DbContext
 {
     public DbSet<League> Leagues => Set<League>();
+    public DbSet<Team> Teams => Set<Team>();
     public ResourcesDbContext(DbContextOptions<ResourcesDbContext> options)
         : base(options){}
 }
