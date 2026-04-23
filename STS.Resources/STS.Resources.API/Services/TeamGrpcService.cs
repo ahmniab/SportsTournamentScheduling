@@ -6,7 +6,7 @@ using STS.Resources.Domain.Entities;
 
 namespace STS.Resources.API.Services;
 
-public class TeamGrpcService : STS.Resources.API.Grpc.TeamService.TeamServiceBase
+public class TeamGrpcService : TeamService.TeamServiceBase
 {
     private readonly ITeamService teamService;
 
