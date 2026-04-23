@@ -1,6 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using STS.Resources.API.Grpc;
+using STS.Resources.Application.Features.Stadium;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Domain.Entities;
 
@@ -17,101 +18,95 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
 
     public override async Task<GetStadiumsResponse> GetStadiums(GetStadiumsRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.LeagueId, out var leagueId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "league_id must be a valid GUID."));
+            var stadiums = await stadiumService.GetStadiumsByLeagueIdAsync(request.LeagueId);
+            var response = new GetStadiumsResponse();
+            response.Stadiums.AddRange(stadiums.Select(MapStadium));
+            return response;
         }
-
-        var stadiums = await stadiumService.GetStadiumsByLeagueIdAsync(leagueId);
-
-        if (stadiums == null || !stadiums.Any())
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "No stadiums were found for the requested league."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var response = new GetStadiumsResponse();
-        response.Stadiums.AddRange(stadiums.Select(MapStadium));
-        return response;
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<StadiumResponse> GetStadium(GetStadiumRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            var stadium = await stadiumService.GetStadiumByIdAsync(request.Id);
+            return MapStadium(stadium);
         }
-
-        var stadium = await stadiumService.GetStadiumByIdAsync(id);
-
-        if (stadium == null)
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "Stadium was not found."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        return MapStadium(stadium);
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<StadiumResponse> CreateStadium(CreateStadiumRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.LeagueId, out var leagueId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "league_id must be a valid GUID."));
+            var createStadiumCommand = new CreateStadiumCommand
+            {
+                LeagueId = request.LeagueId,
+                Name = request.Name,
+                Logo = request.Logo
+            };
+
+            var stadium = await stadiumService.CreateStadiumAsync(createStadiumCommand);
+            return MapStadium(stadium);
         }
-
-        if (string.IsNullOrWhiteSpace(request.Name))
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var stadium = new Stadium
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            Name = request.Name,
-            Logo = request.Logo,
-        };
-
-        await stadiumService.AddStadiumAsync(stadium);
-
-        return MapStadium(stadium);
     }
 
     public override async Task<StadiumResponse> UpdateStadium(UpdateStadiumRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
-        }
+            var updateStadiumCommand = new UpdateStadiumCommand
+            {
+                Id = request.Id,
+                Name = request.Name,
+                Logo = request.Logo
+            };
 
-        if (string.IsNullOrWhiteSpace(request.Name))
+            var stadium = await stadiumService.UpdateStadiumAsync(updateStadiumCommand);
+            return MapStadium(stadium);
+        }
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var stadium = await stadiumService.GetStadiumByIdAsync(id);
-
-        if (stadium == null)
+        catch (KeyNotFoundException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "Stadium was not found."));
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
-
-        stadium.Name = request.Name;
-        stadium.Logo = request.Logo;
-
-        await stadiumService.UpdateStadiumAsync(stadium);
-
-        return MapStadium(stadium);
     }
 
     public override async Task<Empty> DeleteStadium(DeleteStadiumRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            await stadiumService.DeleteStadiumAsync(request.Id);
+            return new Empty();
         }
-
-        await stadiumService.DeleteStadiumAsync(id);
-        return new Empty();
+        catch (ArgumentException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+        }
     }
 
     private static StadiumResponse MapStadium(Stadium stadium)
