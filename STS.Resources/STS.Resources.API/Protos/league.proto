@@ -5,11 +5,23 @@ option csharp_namespace = "STS.Resources.API.Grpc";
 package league;
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
 service LeagueService {
   rpc GetLeagues (GetLeaguesRequest) returns (GetLeaguesResponse);
   rpc GetLeague (GetLeagueRequest) returns (LeagueResponse);
   rpc CreateLeague (CreateLeagueRequest) returns (LeagueResponse);
+  rpc UpdateLeague (UpdateLeagueRequest) returns (LeagueResponse);
+  rpc DeleteLeague (DeleteLeagueRequest) returns (google.protobuf.Empty);
+}
+
+message LeagueResponse {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp start_date = 5;
+  string logo_url = 6;
 }
 
 message GetLeaguesRequest {
@@ -31,11 +43,13 @@ message CreateLeagueRequest {
   string logo_url = 4;
 }
 
-message LeagueResponse {
+message DeleteLeagueRequest {
   string id = 1;
-  string owner_id = 2;
+} 
+
+message UpdateLeagueRequest {
+  string id = 1;
   string name = 3;
-  google.protobuf.Timestamp created_at = 4;
   google.protobuf.Timestamp start_date = 5;
-  string logo_url = 6;
+  optional string logo_url = 6;
 }

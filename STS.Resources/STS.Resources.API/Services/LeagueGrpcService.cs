@@ -78,6 +78,44 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
         return MapLeague(league);
     }
 
+    public override async Task<LeagueResponse> UpdateLeague(UpdateLeagueRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.Id, out var id))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Name))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
+        }
+
+        var league = await leagueService.GetLeagueByIdAsync(id);
+
+        if (league == null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "League was not found."));
+        }
+
+        league.Name = request.Name;
+        league.StartDate = request.StartDate?.ToDateTime() ?? league.StartDate;
+        league.LogoUrl = string.IsNullOrEmpty(request.LogoUrl) ? null : request.LogoUrl;
+
+        await leagueService.UpdateLeagueAsync(league);
+
+        return MapLeague(league);
+    }
+    public override async Task<Empty> DeleteLeague(DeleteLeagueRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.Id, out var id))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+        }
+
+        await leagueService.DeleteLeagueAsync(id);
+        return new Empty();
+    }
+
     private static LeagueResponse MapLeague(League league)
     {
         return new LeagueResponse

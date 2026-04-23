@@ -6,15 +6,17 @@ namespace STS.Resources.Application.Services;
 public class LeagueService : ILeagueService
 {
     private readonly ILeagueRepository _leagueRepository;
+    private readonly ITeamRepository _teamRepository;
+
+    public LeagueService(ILeagueRepository leagueRepository, ITeamRepository teamRepository)
+    {
+        _leagueRepository = leagueRepository;
+        _teamRepository = teamRepository;
+    }
 
     public async Task<League?> GetLeagueByIdAsync(Guid id)
     {
         return await _leagueRepository.GetByIdAsync(id);
-    }
-
-    public LeagueService(ILeagueRepository leagueRepository)
-    {
-        _leagueRepository = leagueRepository;
     }
 
     public async Task<List<League>?> GetLeaguesByOwnerIdAsync(Guid ownerId)
@@ -32,8 +34,9 @@ public class LeagueService : ILeagueService
         await _leagueRepository.UpdateAsync(league);
     }
 
-    public async Task DeleteLeagueAsync(Guid ownerId)
+    public async Task DeleteLeagueAsync(Guid Id)
     {
-        await _leagueRepository.DeleteAsync(ownerId);
+        await _leagueRepository.GetByIdAsync(Id);
+        await _leagueRepository.DeleteAsync(Id);
     }
 }

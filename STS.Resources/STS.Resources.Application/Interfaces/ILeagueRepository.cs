@@ -8,5 +8,5 @@ public interface ILeagueRepository
     Task<List<League>?> GetByOwnerIdAsync(Guid ownerId);
     Task AddAsync(League league);
     Task UpdateAsync(League league);
-    Task DeleteAsync(Guid ownerId);
+    Task DeleteAsync(Guid Id);
 }
