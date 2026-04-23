@@ -12,8 +12,8 @@ using STS.Resources.Infrastructure.Persistence;
 namespace STS.Resources.Infrastructure.Migrations
 {
     [DbContext(typeof(ResourcesDbContext))]
-    [Migration("20260421231343_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260423112112_IntialCreate")]
+    partial class IntialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -49,10 +49,46 @@ namespace STS.Resources.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId")
-                        .IsUnique();
+                    b.HasIndex("OwnerId");
 
                     b.ToTable("Leagues");
+                });
+
+            modelBuilder.Entity("STS.Resources.Domain.Entities.Team", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("LeagueId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LogoUrl")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LeagueId");
+
+                    b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("STS.Resources.Domain.Entities.Team", b =>
+                {
+                    b.HasOne("STS.Resources.Domain.Entities.League", "League")
+                        .WithMany()
+                        .HasForeignKey("LeagueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("League");
                 });
 #pragma warning restore 612, 618
         }
