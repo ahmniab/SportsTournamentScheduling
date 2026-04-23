@@ -23,9 +23,10 @@ public class LeagueService : ILeagueService
         return await _leagueRepository.GetByIdAsync(id);
     }
 
-    public async Task<List<League>?> GetLeaguesByOwnerIdAsync(Guid ownerId)
+    public async Task<IEnumerable<League>> GetLeaguesByOwnerIdAsync(Guid ownerId)
     {
-        return await _leagueRepository.GetByOwnerIdAsync(ownerId);
+        var leagues = await _leagueRepository.GetByOwnerIdAsync(ownerId);
+        return leagues ?? Enumerable.Empty<League>();
     }
 
     public async Task CreateLeagueAsync(League league)

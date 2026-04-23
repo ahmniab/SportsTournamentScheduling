@@ -4,7 +4,7 @@ namespace STS.Resources.Application.Interfaces;
 
 public interface ILeagueService
 {
-    Task<List<League>?> GetLeaguesByOwnerIdAsync(Guid ownerId);
+    Task<IEnumerable<League>> GetLeaguesByOwnerIdAsync(Guid ownerId);
     Task<League?> GetLeagueByIdAsync(Guid id);
     Task CreateLeagueAsync(League league);
     Task UpdateLeagueAsync(League league);
