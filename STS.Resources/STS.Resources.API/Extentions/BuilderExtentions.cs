@@ -26,7 +26,10 @@ public static class BuilderExtentions
         builder.Services.AddScoped<ITeamService, TeamService>();
         builder.Services.AddScoped<IStadiumService, StadiumService>();
         builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
-        builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ResourcesDb")!);
+        builder.Services.AddInfrastructure(
+            builder.Configuration.GetConnectionString("ResourcesDb")!, 
+            builder.Environment.IsDevelopment());
+
         return builder;
     }
 }
