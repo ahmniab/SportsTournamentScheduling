@@ -4,10 +4,10 @@ namespace STS.Resources.Application.Interfaces;
 
 public interface IStadiumRepository
 {
-    Task<Stadium?> GetStadiumByIdAsync(Guid stadiumId);
-    Task<IEnumerable<Stadium>> GetStadiumsByLeagueIdAsync(Guid leagueId);
-    Task AddStadiumAsync(Stadium stadium);
-    Task UpdateStadiumAsync(Stadium stadium);
-    Task DeleteStadiumAsync(Guid stadiumId);
+    Task<Stadium?> GetByIdAsync(Guid id);
+    Task<IEnumerable<Stadium>?> GetByLeagueIdAsync(Guid leagueId);
+    Task<Stadium> AddAsync(Stadium stadium);
+    Task<Stadium> UpdateAsync(Stadium stadium);
+    Task DeleteAsync(Guid id);
     Task DeleteStadiumAsyncByLeagueIdAsync(Guid leagueId);
 }
