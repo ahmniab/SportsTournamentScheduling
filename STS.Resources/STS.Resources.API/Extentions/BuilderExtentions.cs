@@ -21,6 +21,7 @@ public static class BuilderExtentions
         builder.Services.AddScoped<ILeagueRepository, LeagueRepository>();
         builder.Services.AddScoped<ITeamRepository, TeamRepository>();
         builder.Services.AddScoped<ILeagueService, LeagueService>();
+        builder.Services.AddScoped<ITeamService, TeamService>();
         builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ResourcesDb")!);
         return builder;
     }
