@@ -8,5 +8,5 @@ public interface ILeagueService
     Task<League?> GetLeagueByIdAsync(Guid id);
     Task CreateLeagueAsync(League league);
     Task UpdateLeagueAsync(League league);
-    Task DeleteLeagueAsync(Guid leagueId);
+    Task DeleteLeagueAsync(Guid Id);
 }
