@@ -19,9 +19,11 @@ public class LeagueRepository : ILeagueRepository
         return await _context.Leagues.FindAsync(id);
     }
 
-    public async Task<List<League>?> GetByOwnerIdAsync(Guid ownerId)
+    public async Task<IEnumerable<League>?> GetByOwnerIdAsync(Guid ownerId)
     {
-        return await _context.Leagues.Where(l => l.OwnerId == ownerId).ToListAsync();
+        return await _context.Leagues
+            .Where(l => l.OwnerId == ownerId)
+            .ToListAsync();
     }
 
     public async Task AddAsync(League league)
