@@ -3,6 +3,7 @@ using Grpc.Core;
 using STS.Resources.API.Grpc;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Domain.Entities;
+using STS.Resources.Application.Features.League;
 
 namespace STS.Resources.API.Services;
 
@@ -17,103 +18,97 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
 
     public override async Task<GetLeaguesResponse> GetLeagues(GetLeaguesRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.OwnerId, out var ownerId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "owner_id must be a valid GUID."));
+            var leagues = await leagueService.GetLeaguesByOwnerIdAsync(request.OwnerId);
+            var response = new GetLeaguesResponse();
+            response.Leagues.AddRange(leagues.Select(MapLeague));
+            return response;
+
         }
-
-        var leagues = await leagueService.GetLeaguesByOwnerIdAsync(ownerId);
-
-        if (leagues == null || leagues.Count == 0)
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "No leagues were found for the requested owner."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var response = new GetLeaguesResponse();
-        response.Leagues.AddRange(leagues.Select(MapLeague));
-        return response;
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<LeagueResponse> GetLeague(GetLeagueRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            var league = await leagueService.GetLeagueByIdAsync(request.Id);
+            return MapLeague(league);
         }
-
-        var league = await leagueService.GetLeagueByIdAsync(id);
-
-        if (league == null)
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "League was not found."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        return MapLeague(league);
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<LeagueResponse> CreateLeague(CreateLeagueRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.OwnerId, out var ownerId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "owner_id must be a valid GUID."));
+            var createLeagueCommand = new CreateLeagueCommand
+            {
+                OwnerId = request.OwnerId,
+                Name = request.Name,
+                StartDate = request.StartDate?.ToDateTime() ?? DateTime.MinValue,
+                LogoUrl = request.LogoUrl
+            };
+            var league = await leagueService.CreateLeagueAsync(createLeagueCommand);
+            return MapLeague(league);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
-        }
-
-        var league = new League
-        {
-            Id = Guid.NewGuid(),
-            OwnerId = ownerId,
-            Name = request.Name,
-            StartDate = request.StartDate?.ToDateTime() ?? DateTime.UtcNow,
-            LogoUrl = request.LogoUrl,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await leagueService.CreateLeagueAsync(league);
-
-        return MapLeague(league);
     }
 
     public override async Task<LeagueResponse> UpdateLeague(UpdateLeagueRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            var updateLeagueCommand = new UpdateLeagueCommand
+            {
+                Id = request.Id,
+                Name = request.Name,
+                StartDate = request.StartDate?.ToDateTime() ?? DateTime.MinValue,
+                LogoUrl = request.LogoUrl
+            };
+            var league = await leagueService.UpdateLeagueAsync(updateLeagueCommand);
+            return MapLeague(league);
+        }
+        catch (ArgumentException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
 
-        if (string.IsNullOrWhiteSpace(request.Name))
-        {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
-        }
-
-        var league = await leagueService.GetLeagueByIdAsync(id);
-
-        if (league == null)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, "League was not found."));
-        }
-
-        league.Name = request.Name;
-        league.StartDate = request.StartDate?.ToDateTime() ?? league.StartDate;
-        league.LogoUrl = request.LogoUrl;
-
-        await leagueService.UpdateLeagueAsync(league);
-
-        return MapLeague(league);
     }
     public override async Task<Empty> DeleteLeague(DeleteLeagueRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            await leagueService.DeleteLeagueAsync(request.Id);
+            return new Empty();
         }
-
-        await leagueService.DeleteLeagueAsync(id);
-        return new Empty();
+        catch (ArgumentException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+        }
     }
 
     private static LeagueResponse MapLeague(League league)
@@ -123,12 +118,24 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
             Id = league.Id.ToString(),
             OwnerId = league.OwnerId.ToString(),
             Name = league.Name,
-            CreatedAt = league.CreatedAt.ToTimestamp(),
-            StartDate = league.StartDate.ToTimestamp(),
+            CreatedAt = ToUtcTimestamp(league.CreatedAt),
+            StartDate = ToUtcTimestamp(league.StartDate),
         };
         if (!string.IsNullOrWhiteSpace(league.LogoUrl))
             response.LogoUrl = league.LogoUrl;
-        
+
         return response;
+    }
+
+    private static Timestamp ToUtcTimestamp(DateTime value)
+    {
+        var utcValue = value.Kind switch
+        {
+            DateTimeKind.Utc => value,
+            DateTimeKind.Local => value.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(value, DateTimeKind.Utc)
+        };
+
+        return utcValue.ToTimestamp();
     }
 }

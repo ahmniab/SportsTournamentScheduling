@@ -26,16 +26,25 @@ public class LeagueRepository : ILeagueRepository
             .ToListAsync();
     }
 
-    public async Task AddAsync(League league)
+    public async Task<League> AddAsync(League league)
     {
         await _context.Leagues.AddAsync(league);
         await _context.SaveChangesAsync();
+        return league;
     }
 
-    public async Task UpdateAsync(League league)
+    public async Task<League> UpdateAsync(League league)
     {
+        var prevLeague = await _context.Leagues
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == league.Id) 
+                         ?? throw new KeyNotFoundException("League was not found after update.");
+        league.OwnerId = prevLeague.OwnerId;
+        league.CreatedAt = prevLeague.CreatedAt;
         _context.Leagues.Update(league);
+
         await _context.SaveChangesAsync();
+        return league;
     }
 
     public async Task DeleteAsync(Guid Id)
