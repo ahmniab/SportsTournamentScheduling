@@ -21,9 +21,11 @@ public static class BuilderExtentions
         builder.Services.AddScoped<ILeagueRepository, LeagueRepository>();
         builder.Services.AddScoped<ITeamRepository, TeamRepository>();
         builder.Services.AddScoped<IStadiumRepository, StadiumRepository>();
+        builder.Services.AddScoped<ITimeSlotRepository, TimeSlotRepository>();
         builder.Services.AddScoped<ILeagueService, LeagueService>();
         builder.Services.AddScoped<ITeamService, TeamService>();
         builder.Services.AddScoped<IStadiumService, StadiumService>();
+        builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
         builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("ResourcesDb")!);
         return builder;
     }

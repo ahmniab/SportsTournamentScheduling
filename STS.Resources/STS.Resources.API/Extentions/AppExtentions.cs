@@ -9,6 +9,7 @@ public static class AppExtentions
         app.MapGrpcService<LeagueGrpcService>();
         app.MapGrpcService<TeamGrpcService>();
         app.MapGrpcService<StadiumGrpcService>();
+        app.MapGrpcService<TimeSlotGrpcService>();
         return app;
     }
 }
