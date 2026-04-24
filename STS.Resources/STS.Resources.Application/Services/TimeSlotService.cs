@@ -1,6 +1,8 @@
 using System.Globalization;
 using STS.Resources.Application.Interfaces;
+using STS.Resources.Application.Features.TimeSlot;
 using STS.Resources.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace STS.Resources.Application.Services;
 
@@ -14,38 +16,94 @@ public class TimeSlotService : ITimeSlotService
         _timeSlotRepository = timeSlotRepository;
     }
 
-    public async Task<TimeSlot?> GetTimeSlotByIdAsync(Guid timeSlotId)
+    public async Task<TimeSlot> GetTimeSlotByIdAsync(string id)
     {
-        return await _timeSlotRepository.GetTimeSlotByIdAsync(timeSlotId);
+        if (!Guid.TryParse(id, out var timeSlotGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(id));
+        }
+
+        return await _timeSlotRepository.GetByIdAsync(timeSlotGuid) ?? throw new KeyNotFoundException("Time slot was not found.");
     }
 
-    public async Task<IEnumerable<TimeSlot>> GetTimeSlotsByLeagueIdAsync(Guid leagueId)
+    public async Task<IEnumerable<TimeSlot>> GetTimeSlotsByLeagueIdAsync(string leagueId)
     {
-        return await _timeSlotRepository.GetTimeSlotsByLeagueIdAsync(leagueId);
+        if (!Guid.TryParse(leagueId, out var leagueGuid))
+        {
+            throw new ArgumentException("league_id must be a valid GUID.", nameof(leagueId));
+        }
+
+        var timeSlots = await _timeSlotRepository.GetByLeagueIdAsync(leagueGuid);
+        return timeSlots ?? throw new KeyNotFoundException("No time slots were found for the requested league.");
     }
 
-    public async Task AddTimeSlotAsync(TimeSlot timeSlot)
+    public async Task<TimeSlot> CreateTimeSlotAsync(CreateTimeSlotCommand timeSlot)
     {
-        ValidateTimeSlot(timeSlot);
+        if (!Guid.TryParse(timeSlot.LeagueId, out var leagueGuid))
+        {
+            throw new ArgumentException("league_id must be a valid GUID.", nameof(timeSlot.LeagueId));
+        }
 
-        var existingTimeSlots = await _timeSlotRepository.GetTimeSlotsByLeagueIdAsync(timeSlot.LeagueId);
+        var newTimeSlot = new TimeSlot
+        {
+            LeagueId = leagueGuid,
+            StartTime = timeSlot.StartTime,
+            EndTime = timeSlot.EndTime
+        };
+
+        ValidateTimeSlot(newTimeSlot);
+
+        var existingTimeSlots = await _timeSlotRepository.GetByLeagueIdAsync(newTimeSlot.LeagueId) ?? Enumerable.Empty<TimeSlot>();
         if (existingTimeSlots.Count() >= MaxTimeSlotsPerLeague)
         {
             throw new InvalidOperationException($"A league can have at most {MaxTimeSlotsPerLeague} time slots.");
         }
 
-        await _timeSlotRepository.AddTimeSlotAsync(timeSlot);
+        return await _timeSlotRepository.AddAsync(newTimeSlot);
     }
 
-    public async Task UpdateTimeSlotAsync(TimeSlot timeSlot)
+    public async Task<TimeSlot> UpdateTimeSlotAsync(UpdateTimeSlotCommand timeSlot)
     {
-        ValidateTimeSlot(timeSlot);
-        await _timeSlotRepository.UpdateTimeSlotAsync(timeSlot);
+        if (!Guid.TryParse(timeSlot.Id, out var timeSlotGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(timeSlot.Id));
+        }
+
+        try
+        {
+            var prevTimeSlot = await _timeSlotRepository.GetByIdAsync(timeSlotGuid)
+                               ?? throw new KeyNotFoundException("Time slot was not found.");
+
+            var updatedTimeSlot = new TimeSlot
+            {
+                Id = timeSlotGuid,
+                LeagueId = prevTimeSlot.LeagueId,
+                StartTime = timeSlot.StartTime,
+                EndTime = timeSlot.EndTime
+            };
+
+            ValidateTimeSlot(updatedTimeSlot);
+            await _timeSlotRepository.UpdateAsync(updatedTimeSlot);
+            return updatedTimeSlot;
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new KeyNotFoundException("Time slot was not found or has been deleted.", ex);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new KeyNotFoundException("Time slot was not found.", ex);
+        }
     }
 
-    public async Task DeleteTimeSlotAsync(Guid timeSlotId)
+    public async Task DeleteTimeSlotAsync(string id)
     {
-        await _timeSlotRepository.DeleteTimeSlotAsync(timeSlotId);
+        if (!Guid.TryParse(id, out var timeSlotGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(id));
+        }
+
+        await _timeSlotRepository.DeleteAsync(timeSlotGuid);
     }
 
     private static void ValidateTimeSlot(TimeSlot timeSlot)

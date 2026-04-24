@@ -1,12 +1,13 @@
 using STS.Resources.Domain.Entities;
+using STS.Resources.Application.Features.TimeSlot;
 
 namespace STS.Resources.Application.Interfaces;
 
 public interface ITimeSlotService
 {
-    Task<TimeSlot?> GetTimeSlotByIdAsync(Guid timeSlotId);
-    Task<IEnumerable<TimeSlot>> GetTimeSlotsByLeagueIdAsync(Guid leagueId);
-    Task AddTimeSlotAsync(TimeSlot timeSlot);
-    Task UpdateTimeSlotAsync(TimeSlot timeSlot);
-    Task DeleteTimeSlotAsync(Guid timeSlotId);
+    Task<IEnumerable<TimeSlot>> GetTimeSlotsByLeagueIdAsync(string leagueId);
+    Task<TimeSlot> GetTimeSlotByIdAsync(string id);
+    Task<TimeSlot> CreateTimeSlotAsync(CreateTimeSlotCommand timeSlot);
+    Task<TimeSlot> UpdateTimeSlotAsync(UpdateTimeSlotCommand timeSlot);
+    Task DeleteTimeSlotAsync(string id);
 }
