@@ -71,18 +71,14 @@ public class TimeSlotService : ITimeSlotService
 
         try
         {
-            var prevTimeSlot = await _timeSlotRepository.GetByIdAsync(timeSlotGuid)
-                               ?? throw new KeyNotFoundException("Time slot was not found.");
-
             var updatedTimeSlot = new TimeSlot
             {
                 Id = timeSlotGuid,
-                LeagueId = prevTimeSlot.LeagueId,
                 StartTime = timeSlot.StartTime,
                 EndTime = timeSlot.EndTime
             };
 
-            ValidateTimeSlot(updatedTimeSlot);
+            ValidateTimeSlot(updatedTimeSlot,  false);
             await _timeSlotRepository.UpdateAsync(updatedTimeSlot);
             return updatedTimeSlot;
         }
@@ -106,12 +102,12 @@ public class TimeSlotService : ITimeSlotService
         await _timeSlotRepository.DeleteAsync(timeSlotGuid);
     }
 
-    private static void ValidateTimeSlot(TimeSlot timeSlot)
+    private static void ValidateTimeSlot(TimeSlot timeSlot, bool validateLeagueId = true)
     {
-        if (timeSlot.LeagueId == Guid.Empty)
-        {
-            throw new ArgumentException("league_id must be a valid GUID.");
-        }
+        if (validateLeagueId)
+            if (timeSlot.LeagueId == Guid.Empty)
+                throw new ArgumentException("league_id must be a valid GUID.");
+            
 
         var startTime = NormalizeAndValidateTime(timeSlot.StartTime, nameof(timeSlot.StartTime));
         var endTime = NormalizeAndValidateTime(timeSlot.EndTime, nameof(timeSlot.EndTime));
