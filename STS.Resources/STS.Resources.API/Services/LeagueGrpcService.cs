@@ -1,6 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using STS.Resources.API.Grpc;
+using STS.Resources.API.Extentions;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Domain.Entities;
 using STS.Resources.Application.Features.League;
@@ -40,8 +41,9 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
     {
         try
         {
-            var league = await leagueService.GetLeagueByIdAsync(request.Id);
-            return MapLeague(league);
+            var command = request.ToGetLeagueByIdCommand();
+            var leagueResponse = await leagueService.GetLeagueByIdAsync(command);
+            return leagueResponse.ToGrpcResponse(command.IncludeOptions);
         }
         catch (ArgumentException ex)
         {
