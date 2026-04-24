@@ -2,6 +2,9 @@ using STS.Resources.Domain.Entities;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Application.Features.League;
 using Microsoft.EntityFrameworkCore;
+using STS.Resources.Application.Extentions;
+using STS.Resources.Application.Features;
+using STS.Resources.Application.Models.Responses;
 
 namespace STS.Resources.Application.Services;
 
@@ -20,13 +23,31 @@ public class LeagueService : ILeagueService
         _timeSlotRepository = timeSlotRepository;
     }
 
-    public async Task<League> GetLeagueByIdAsync(String id)
+    public async Task<LeagueResponse> GetLeagueByIdAsync(GetLeagueByIdCommand command)
     {
-        if (!Guid.TryParse(id, out var leagueGuid))
+        if (!Guid.TryParse(command.Id, out var leagueGuid))
         {
-            throw new ArgumentException("id must be a valid GUID.", nameof(id));
+            throw new ArgumentException("id must be a valid GUID.", nameof(command.Id));
         }
-        return await _leagueRepository.GetByIdAsync(leagueGuid) ?? throw new KeyNotFoundException("League was not found.");
+        
+
+        League league;
+        if (command.IncludeOptions != null)
+        {
+            league = await _leagueRepository.GetByIdAsync(
+                        leagueGuid,
+                        command.IncludeOptions?.IncludeTeams != IncludeOption.INCLUDE_NOTHING,
+                        command.IncludeOptions?.IncludeStadiums != IncludeOption.INCLUDE_NOTHING,
+                        command.IncludeOptions?.IncludeTimeSlots != IncludeOption.INCLUDE_NOTHING
+                    ) 
+                    ?? throw new KeyNotFoundException("League was not found.");
+        }
+        else
+        {
+            league = await _leagueRepository.GetByIdAsync(leagueGuid) 
+                     ?? throw new KeyNotFoundException("League was not found.");
+        }
+        return league.BuildLeagueResponse(command.IncludeOptions);
     }
 
     public async Task<IEnumerable<League>> GetLeaguesByOwnerIdAsync(string ownerId)
@@ -112,4 +133,5 @@ public class LeagueService : ILeagueService
         await _timeSlotRepository.DeleteTimeSlotAsyncByLeagueIdAsync(leagueGuid);
         await _leagueRepository.DeleteAsync(leagueGuid);
     }
+
 }
