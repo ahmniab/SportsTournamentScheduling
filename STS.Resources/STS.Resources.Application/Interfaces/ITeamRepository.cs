@@ -4,10 +4,10 @@ namespace STS.Resources.Application.Interfaces;
 
 public interface ITeamRepository
 {
-    Task<Team?> GetTeamByIdAsync(Guid teamId);
-    Task<IEnumerable<Team>> GetTeamsByLeagueIdAsync(Guid leagueId);
-    Task AddTeamAsync(Team team);
-    Task UpdateTeamAsync(Team team);
-    Task DeleteTeamAsync(Guid teamId);
+    Task<Team?> GetByIdAsync(Guid id);
+    Task<IEnumerable<Team>?> GetByLeagueIdAsync(Guid leagueId);
+    Task<Team> AddAsync(Team team);
+    Task<Team> UpdateAsync(Team team);
+    Task DeleteAsync(Guid id);
     Task DeleteTeamAsyncByLeagueIdAsync(Guid leagueId);
 }
