@@ -1,6 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using STS.Resources.API.Grpc;
+using STS.Resources.Application.Features.Team;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Domain.Entities;
 
@@ -17,102 +18,95 @@ public class TeamGrpcService : TeamService.TeamServiceBase
 
     public override async Task<GetTeamsResponse> GetTeams(GetTeamsRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.LeagueId, out var leagueId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "league_id must be a valid GUID."));
+            var teams = await teamService.GetTeamsByLeagueIdAsync(request.LeagueId);
+            var response = new GetTeamsResponse();
+            response.Teams.AddRange(teams.Select(MapTeam));
+            return response;
         }
-
-        var teams = await teamService.GetTeamsByLeagueIdAsync(leagueId);
-
-        if (teams == null || !teams.Any())
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "No teams were found for the requested league."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var response = new GetTeamsResponse();
-        response.Teams.AddRange(teams.Select(MapTeam));
-        return response;
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<TeamResponse> GetTeam(GetTeamRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            var team = await teamService.GetTeamByIdAsync(request.Id);
+            return MapTeam(team);
         }
-
-        var team = await teamService.GetTeamByIdAsync(id);
-
-        if (team == null)
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "Team was not found."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        return MapTeam(team);
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<TeamResponse> CreateTeam(CreateTeamRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.LeagueId, out var leagueId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "league_id must be a valid GUID."));
+            var createTeamCommand = new CreateTeamCommand
+            {
+                LeagueId = request.LeagueId,
+                Name = request.Name,
+                LogoUrl = request.LogoUrl
+            };
+
+            var team = await teamService.CreateTeamAsync(createTeamCommand);
+            return MapTeam(team);
         }
-
-        if (string.IsNullOrWhiteSpace(request.Name))
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var team = new Team
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            Name = request.Name,
-            LogoUrl = request.LogoUrl,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await teamService.AddTeamAsync(team);
-
-        return MapTeam(team);
     }
 
     public override async Task<TeamResponse> UpdateTeam(UpdateTeamRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
-        }
+            var updateTeamCommand = new UpdateTeamCommand
+            {
+                Id = request.Id,
+                Name = request.Name,
+                LogoUrl = request.LogoUrl
+            };
 
-        if (string.IsNullOrWhiteSpace(request.Name))
+            var team = await teamService.UpdateTeamAsync(updateTeamCommand);
+            return MapTeam(team);
+        }
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "name is required."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var team = await teamService.GetTeamByIdAsync(id);
-
-        if (team == null)
+        catch (KeyNotFoundException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "Team was not found."));
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
-
-        team.Name = request.Name;
-        team.LogoUrl = request.LogoUrl;
-
-        await teamService.UpdateTeamAsync(team);
-
-        return MapTeam(team);
     }
 
     public override async Task<Empty> DeleteTeam(DeleteTeamRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            await teamService.DeleteTeamAsync(request.Id);
+            return new Empty();
         }
-
-        await teamService.DeleteTeamAsync(id);
-        return new Empty();
+        catch (ArgumentException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+        }
     }
 
     private static TeamResponse MapTeam(Team team)
