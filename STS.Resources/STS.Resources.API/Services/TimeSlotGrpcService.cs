@@ -1,6 +1,7 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using STS.Resources.API.Grpc;
+using STS.Resources.Application.Features.TimeSlot;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Domain.Entities;
 
@@ -17,58 +18,53 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
 
     public override async Task<GetTimeSlotsResponse> GetTimeSlots(GetTimeSlotsRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.LeagueId, out var leagueId))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "league_id must be a valid GUID."));
+            var timeSlots = await timeSlotService.GetTimeSlotsByLeagueIdAsync(request.LeagueId);
+            var response = new GetTimeSlotsResponse();
+            response.TimeSlots.AddRange(timeSlots.Select(MapTimeSlot));
+            return response;
         }
-
-        var timeSlots = await timeSlotService.GetTimeSlotsByLeagueIdAsync(leagueId);
-
-        if (timeSlots == null || !timeSlots.Any())
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "No time slots were found for the requested league."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        var response = new GetTimeSlotsResponse();
-        response.TimeSlots.AddRange(timeSlots.Select(MapTimeSlot));
-        return response;
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<TimeSlotResponse> GetTimeSlot(GetTimeSlotRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            var timeSlot = await timeSlotService.GetTimeSlotByIdAsync(request.Id);
+            return MapTimeSlot(timeSlot);
         }
-
-        var timeSlot = await timeSlotService.GetTimeSlotByIdAsync(id);
-
-        if (timeSlot == null)
+        catch (ArgumentException ex)
         {
-            throw new RpcException(new Status(StatusCode.NotFound, "Time slot was not found."));
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
-
-        return MapTimeSlot(timeSlot);
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 
     public override async Task<TimeSlotResponse> CreateTimeSlot(CreateTimeSlotRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.LeagueId, out var leagueId))
-        {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "league_id must be a valid GUID."));
-        }
-
-        var timeSlot = new TimeSlot
-        {
-            Id = Guid.NewGuid(),
-            LeagueId = leagueId,
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-        };
-
         try
         {
-            await timeSlotService.AddTimeSlotAsync(timeSlot);
+            var createTimeSlotCommand = new CreateTimeSlotCommand
+            {
+                LeagueId = request.LeagueId,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime
+            };
+
+            var timeSlot = await timeSlotService.CreateTimeSlotAsync(createTimeSlotCommand);
+            return MapTimeSlot(timeSlot);
         }
         catch (ArgumentException exception)
         {
@@ -78,48 +74,43 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         {
             throw new RpcException(new Status(StatusCode.FailedPrecondition, exception.Message));
         }
-
-        return MapTimeSlot(timeSlot);
     }
 
     public override async Task<TimeSlotResponse> UpdateTimeSlot(UpdateTimeSlotRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
-        {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
-        }
-
-        var timeSlot = await timeSlotService.GetTimeSlotByIdAsync(id);
-
-        if (timeSlot == null)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, "Time slot was not found."));
-        }
-
-        timeSlot.StartTime = request.StartTime;
-        timeSlot.EndTime = request.EndTime;
-
         try
         {
-            await timeSlotService.UpdateTimeSlotAsync(timeSlot);
+            var updateTimeSlotCommand = new UpdateTimeSlotCommand
+            {
+                Id = request.Id,
+                StartTime = request.StartTime,
+                EndTime = request.EndTime
+            };
+
+            var timeSlot = await timeSlotService.UpdateTimeSlotAsync(updateTimeSlotCommand);
+            return MapTimeSlot(timeSlot);
         }
         catch (ArgumentException exception)
         {
             throw new RpcException(new Status(StatusCode.InvalidArgument, exception.Message));
         }
-
-        return MapTimeSlot(timeSlot);
+        catch (KeyNotFoundException exception)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, exception.Message));
+        }
     }
 
     public override async Task<Empty> DeleteTimeSlot(DeleteTimeSlotRequest request, ServerCallContext context)
     {
-        if (!Guid.TryParse(request.Id, out var id))
+        try
         {
-            throw new RpcException(new Status(StatusCode.InvalidArgument, "id must be a valid GUID."));
+            await timeSlotService.DeleteTimeSlotAsync(request.Id);
+            return new Empty();
         }
-
-        await timeSlotService.DeleteTimeSlotAsync(id);
-        return new Empty();
+        catch (ArgumentException exception)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, exception.Message));
+        }
     }
 
     private static TimeSlotResponse MapTimeSlot(TimeSlot timeSlot)

@@ -14,31 +14,39 @@ public class TimeSlotRepository : ITimeSlotRepository
         _context = context;
     }
 
-    public async Task<TimeSlot?> GetTimeSlotByIdAsync(Guid timeSlotId)
+    public async Task<TimeSlot?> GetByIdAsync(Guid id)
     {
-        return await _context.TimeSlots.FindAsync(timeSlotId);
+        return await _context.TimeSlots.FindAsync(id);
     }
 
-    public async Task<IEnumerable<TimeSlot>> GetTimeSlotsByLeagueIdAsync(Guid leagueId)
+    public async Task<IEnumerable<TimeSlot>?> GetByLeagueIdAsync(Guid leagueId)
     {
         return await _context.TimeSlots.Where(timeSlot => timeSlot.LeagueId == leagueId).ToListAsync();
     }
 
-    public async Task AddTimeSlotAsync(TimeSlot timeSlot)
+    public async Task<TimeSlot> AddAsync(TimeSlot timeSlot)
     {
         await _context.TimeSlots.AddAsync(timeSlot);
         await _context.SaveChangesAsync();
+        return timeSlot;
     }
 
-    public async Task UpdateTimeSlotAsync(TimeSlot timeSlot)
+    public async Task<TimeSlot> UpdateAsync(TimeSlot timeSlot)
     {
+        var prevTimeSlot = await _context.TimeSlots
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.Id == timeSlot.Id)
+                           ?? throw new KeyNotFoundException("Time slot was not found after update.");
+
+        timeSlot.LeagueId = prevTimeSlot.LeagueId;
         _context.TimeSlots.Update(timeSlot);
         await _context.SaveChangesAsync();
+        return timeSlot;
     }
 
-    public async Task DeleteTimeSlotAsync(Guid timeSlotId)
+    public async Task DeleteAsync(Guid id)
     {
-        var timeSlot = await _context.TimeSlots.FindAsync(timeSlotId);
+        var timeSlot = await GetByIdAsync(id);
         if (timeSlot != null)
         {
             _context.TimeSlots.Remove(timeSlot);
