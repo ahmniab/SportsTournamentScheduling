@@ -4,10 +4,10 @@ namespace STS.Resources.Application.Interfaces;
 
 public interface ITimeSlotRepository
 {
-    Task<TimeSlot?> GetTimeSlotByIdAsync(Guid timeSlotId);
-    Task<IEnumerable<TimeSlot>> GetTimeSlotsByLeagueIdAsync(Guid leagueId);
-    Task AddTimeSlotAsync(TimeSlot timeSlot);
-    Task UpdateTimeSlotAsync(TimeSlot timeSlot);
-    Task DeleteTimeSlotAsync(Guid timeSlotId);
+    Task<TimeSlot?> GetByIdAsync(Guid id);
+    Task<IEnumerable<TimeSlot>?> GetByLeagueIdAsync(Guid leagueId);
+    Task<TimeSlot> AddAsync(TimeSlot timeSlot);
+    Task<TimeSlot> UpdateAsync(TimeSlot timeSlot);
+    Task DeleteAsync(Guid id);
     Task DeleteTimeSlotAsyncByLeagueIdAsync(Guid leagueId);
 }
