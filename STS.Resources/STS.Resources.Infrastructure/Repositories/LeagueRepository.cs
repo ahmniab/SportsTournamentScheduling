@@ -1,7 +1,9 @@
 using STS.Resources.Domain.Entities;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Infrastructure.Persistence;
+using STS.Resources.Application.Features.League;
 using Microsoft.EntityFrameworkCore;
+using STS.Resources.Application.Features;
 
 namespace STS.Resources.Infrastructure.Repositories;
 
@@ -17,6 +19,24 @@ public class LeagueRepository : ILeagueRepository
     public async Task<League?> GetByIdAsync(Guid id)
     {
         return await _context.Leagues.FindAsync(id);
+    }
+    public async Task<League?> GetByIdAsync(
+        Guid id, 
+        bool includeTeams = false,  
+        bool includeStadiums = false,
+        bool includeTimeSlots = false)
+    {
+        var league =  _context.Leagues.AsQueryable();
+
+        if (includeTeams)
+            league = league.Include(l => l.Teams);
+        if (includeStadiums)
+            league = league.Include(l => l.Stadiums);
+        if (includeTimeSlots)
+            league = league.Include(l => l.TimeSlots);
+        
+        return await league.FirstOrDefaultAsync(l => l.Id == id);
+        
     }
 
     public async Task<IEnumerable<League>?> GetByOwnerIdAsync(Guid ownerId)
