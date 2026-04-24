@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 
 namespace STS.Resources.Domain.Entities;
@@ -9,6 +10,7 @@ public class TimeSlot
     public Guid LeagueId { get; set; }
     public required string StartTime { get; set; }
     public required string EndTime { get; set; }
-
+    
+    [JsonIgnore]
     public virtual League? League { get; set; }
 }
