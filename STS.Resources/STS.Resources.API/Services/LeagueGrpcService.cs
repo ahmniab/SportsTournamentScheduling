@@ -23,7 +23,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
         {
             var leagues = await leagueService.GetLeaguesByOwnerIdAsync(request.OwnerId);
             var response = new GetLeaguesResponse();
-            response.Leagues.AddRange(leagues.Select(MapLeague));
+            response.Leagues.AddRange(leagues.Select(MapLeagueSummary));
             return response;
 
         }
@@ -127,6 +127,17 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
             response.LogoUrl = league.LogoUrl;
 
         return response;
+    }
+
+    private static LeagueResponseSummary MapLeagueSummary(League league)
+    {
+        return new LeagueResponseSummary
+        {
+            Id = league.Id.ToString(),
+            Name = league.Name,
+            CreatedAt = ToUtcTimestamp(league.CreatedAt),
+            StartDate = ToUtcTimestamp(league.StartDate),
+        };
     }
 
     private static Timestamp ToUtcTimestamp(DateTime value)
