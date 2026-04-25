@@ -42,7 +42,12 @@ public sealed class LeaguePrepareConsumer : BackgroundService
         );
 
         // Process one message at a time — do not prefetch more than you can handle
-        await channel.BasicQosAsync(prefetchSize: 0, prefetchCount: 1, global: false, cancellationToken: stoppingToken);
+        await channel.BasicQosAsync(
+            prefetchSize: 0, 
+            prefetchCount: 1, 
+            global: false, 
+            cancellationToken: stoppingToken
+            );
 
         var consumer = new AsyncEventingBasicConsumer(channel);
 
