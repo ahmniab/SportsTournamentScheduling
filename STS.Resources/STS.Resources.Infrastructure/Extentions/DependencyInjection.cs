@@ -4,6 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using STS.Resources.Infrastructure.Messaging;
 using STS.Resources.Infrastructure.Persistence;
+using STS.Resources.Infrastructure.Repositories;
+using STS.Resources.Application.Interfaces;
+using STS.Resources.Application.Features.League.Commands.PrepareLeague;
+using STS.Resources.Infrastructure.Messaging.Publishers;
+using STS.Resources.Infrastructure.Messaging.Consumers;
 
 namespace STS.Resources.Infrastructure.Extentions;
 
@@ -46,7 +51,11 @@ public static class DependencyInjection
             Password = rabbitMqOptions.Password,
             VirtualHost = rabbitMqOptions.VirtualHost
         });
+        services.AddScoped<ILeagueRepository, LeagueRepository>();
 
+        services.AddScoped<PrepareLeagueHandler>();
+        services.AddScoped<ILeagueReadyPublisher, LeagueReadyPublisher>();
+        services.AddHostedService<LeaguePrepareConsumer>();
         return services;
     }
 }
