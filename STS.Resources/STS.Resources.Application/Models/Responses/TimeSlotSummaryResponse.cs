@@ -4,9 +4,9 @@ namespace STS.Resources.Application.Models.Responses;
 
 public class TimeSlotSummaryResponse
 {
-    public string Id;
+    public string Id { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? StartTime;
+    public string? StartTime { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? EndTime;
+    public string? EndTime { get; set; }
 }
