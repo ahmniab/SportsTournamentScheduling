@@ -27,7 +27,9 @@ public static class BuilderExtentions
         builder.Services.AddScoped<IStadiumService, StadiumService>();
         builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
         builder.Services.AddInfrastructure(
-            builder.Configuration.GetConnectionString("ResourcesDb")!, 
+            builder.Configuration.GetConnectionString("ResourcesDb")!,
+            builder.Configuration.GetConnectionString("Redis")!,
+            builder.Configuration.GetSection("RabbitMq"),
             builder.Environment.IsDevelopment());
 
         return builder;
