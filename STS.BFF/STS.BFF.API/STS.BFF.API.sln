@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "STS.BFF.API", "STS.BFF.API.csproj", "{0281315E-0DAF-42C0-B04E-6D0870CDB1BF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0281315E-0DAF-42C0-B04E-6D0870CDB1BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0281315E-0DAF-42C0-B04E-6D0870CDB1BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0281315E-0DAF-42C0-B04E-6D0870CDB1BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0281315E-0DAF-42C0-B04E-6D0870CDB1BF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A5C56398-C61C-466A-9F8A-E359D7FD8B2D}
+	EndGlobalSection
+EndGlobal
