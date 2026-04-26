@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option csharp_namespace = "STS.BFF.API.Grpc";
+
+package team;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+
+service TeamService {
+    rpc GetTeams (GetTeamsRequest) returns (GetTeamsResponse);
+    rpc GetTeam (GetTeamRequest) returns (TeamResponse);
+    rpc CreateTeam (CreateTeamRequest) returns (TeamResponse);
+    rpc UpdateTeam (UpdateTeamRequest) returns (TeamResponse);
+    rpc DeleteTeam (DeleteTeamRequest) returns (google.protobuf.Empty);
+}
+
+message GetTeamsRequest {
+    string league_id = 1;
+}
+
+message GetTeamsResponse {
+    repeated TeamResponse teams = 1;
+}
+
+
+message GetTeamRequest {
+    string id = 1;
+}
+
+message CreateTeamRequest {
+    string league_id = 1;
+    string name = 2;
+    optional string logo_url = 3;
+}
+
+message UpdateTeamRequest {
+    string id = 1;
+    string name = 2;
+    optional string logo_url = 3;
+}
+
+message DeleteTeamRequest {
+    string id = 1;
+}
+
+message TeamResponse {
+    string id = 1;
+    string league_id = 2;
+    string name = 3;
+    optional string logo_url = 4;
+}

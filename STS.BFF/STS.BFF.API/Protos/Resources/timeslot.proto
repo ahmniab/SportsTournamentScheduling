@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option csharp_namespace = "STS.BFF.API.Grpc";
+
+package timeslot;
+
+import "google/protobuf/empty.proto";
+
+service TimeSlotService {
+  rpc GetTimeSlots (GetTimeSlotsRequest) returns (GetTimeSlotsResponse);
+  rpc GetTimeSlot (GetTimeSlotRequest) returns (TimeSlotResponse);
+  rpc CreateTimeSlot (CreateTimeSlotRequest) returns (TimeSlotResponse);
+  rpc UpdateTimeSlot (UpdateTimeSlotRequest) returns (TimeSlotResponse);
+  rpc DeleteTimeSlot (DeleteTimeSlotRequest) returns (google.protobuf.Empty);
+}
+
+message GetTimeSlotsRequest {
+  string league_id = 1;
+}
+
+message GetTimeSlotsResponse {
+  repeated TimeSlotResponse time_slots = 1;
+}
+
+message GetTimeSlotRequest {
+  string id = 1;
+}
+
+message CreateTimeSlotRequest {
+  string league_id = 1;
+  string start_time = 2;
+  string end_time = 3;
+}
+
+message UpdateTimeSlotRequest {
+  string id = 1;
+  string start_time = 2;
+  string end_time = 3;
+}
+
+message DeleteTimeSlotRequest {
+  string id = 1;
+}
+
+message TimeSlotResponse {
+  string id = 1;
+  string league_id = 2;
+  string start_time = 3;
+  string end_time = 4;
+}

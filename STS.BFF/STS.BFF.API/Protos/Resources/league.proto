@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+option csharp_namespace = "STS.BFF.API.Grpc";
+
+package league;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service LeagueService {
+  rpc GetLeagues      (GetLeaguesRequest)                  returns (GetLeaguesResponse);
+  rpc GetLeague       (GetLeagueRequest)                   returns (LeagueResponse);
+  rpc CreateLeague    (CreateLeagueRequest)                returns (LeagueResponse);
+  rpc UpdateLeague    (UpdateLeagueRequest)                returns (LeagueResponse);
+  rpc DeleteLeague    (DeleteLeagueRequest)                returns (google.protobuf.Empty);
+}
+/// League Response /////////
+
+message LeagueResponse {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp start_date = 5;
+  optional string logo_url = 6;
+
+  repeated TeamSummary teams = 10;
+  repeated StadiumSummary stadiums = 11;
+  repeated TimeSlotSummary time_slots = 12;
+}
+
+message TeamSummary {
+  string id = 1;
+  optional string name = 3;
+  optional string logo_url = 4;
+}
+
+message StadiumSummary {
+  string id = 1;
+  optional string name = 3;
+  optional string logo = 4;
+}
+message TimeSlotSummary {
+  string id = 1;
+  optional string start_time = 3;
+  optional string end_time = 4;
+}
+
+/// Get LeagueRequest ///////
+
+message GetLeagueRequest {
+  string id = 1;
+  LeagueIncludeOptions include = 2;
+}
+
+message LeagueIncludeOptions {
+  IncludeOption teams      = 1;
+  IncludeOption stadiums   = 2;
+  IncludeOption time_slots = 3;
+}
+
+enum IncludeOption {
+  INCLUDE_NOTHING = 0;
+  INCLUDE_ID = 1;
+  INCLUDE_ALL = 2;
+}
+
+////////////////////////////
+
+message GetLeaguesRequest {
+  string owner_id = 1;
+}
+
+message GetLeaguesResponse {
+  repeated LeagueResponseSummary leagues = 1;
+}
+
+message LeagueResponseSummary {
+  string id = 1;
+  string owner_id = 2;
+  string name = 3;
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp start_date = 5;
+  optional string logo_url = 6;
+}
+
+message CreateLeagueRequest {
+  string owner_id = 1;
+  string name = 2;
+  google.protobuf.Timestamp start_date = 3;
+  optional string logo_url = 4;
+}
+
+message DeleteLeagueRequest {
+  string id = 1;
+} 
+
+message UpdateLeagueRequest {
+  string id = 1;
+  string name = 3;
+  google.protobuf.Timestamp start_date = 5;
+  optional string logo_url = 6;
+}
