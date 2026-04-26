@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using STS.Resources.API.Attributes;
 using STS.Resources.API.Grpc;
 using STS.Resources.API.Extentions;
 using STS.Resources.Application.Interfaces;
@@ -37,6 +38,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.League)]
     public override async Task<LeagueResponse> GetLeague(GetLeagueRequest request, ServerCallContext context)
     {
         try
@@ -54,7 +56,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
             throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
     }
-
+    
     public override async Task<LeagueResponse> CreateLeague(CreateLeagueRequest request, ServerCallContext context)
     {
         try
@@ -76,6 +78,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
 
     }
 
+    [RequireOwnership(ResourceType.League)]
     public override async Task<LeagueResponse> UpdateLeague(UpdateLeagueRequest request, ServerCallContext context)
     {
         try

@@ -10,4 +10,5 @@ public interface ITimeSlotService
     Task<TimeSlot> CreateTimeSlotAsync(CreateTimeSlotCommand timeSlot);
     Task<TimeSlot> UpdateTimeSlotAsync(UpdateTimeSlotCommand timeSlot);
     Task DeleteTimeSlotAsync(string id);
+    Task<bool> VerifyOwnershipAsync(string timeSlotId, string ownerId);
 }

@@ -19,7 +19,7 @@ public sealed class LeaguePrepareConsumer : BackgroundService
 
     public LeaguePrepareConsumer(
         IConnectionFactory connectionFactory,
-        IServiceScopeFactory scopeFactory,       // <-- critical, explained below
+        IServiceScopeFactory scopeFactory, 
         ILogger<LeaguePrepareConsumer> logger)
     {
         _connectionFactory = connectionFactory;
@@ -40,8 +40,7 @@ public sealed class LeaguePrepareConsumer : BackgroundService
             arguments: null,
             cancellationToken: stoppingToken
         );
-
-        // Process one message at a time — do not prefetch more than you can handle
+        
         await channel.BasicQosAsync(
             prefetchSize: 0, 
             prefetchCount: 1, 
@@ -59,9 +58,7 @@ public sealed class LeaguePrepareConsumer : BackgroundService
             {
                 var @event = JsonSerializer.Deserialize<LeaguePrepareEvent>(body)
                     ?? throw new InvalidOperationException("Failed to deserialize LeaguePrepareEvent.");
-
-                // Create a fresh DI scope per message — DbContext is Scoped, 
-                // BackgroundService is Singleton, so you MUST resolve via scope
+                
                 using var scope = _scopeFactory.CreateScope();
                 var handler = scope.ServiceProvider.GetRequiredService<PrepareLeagueHandler>();
 
@@ -69,8 +66,7 @@ public sealed class LeaguePrepareConsumer : BackgroundService
                 {
                     LeagueId = @event.LeagueId
                 }, stoppingToken);
-
-                // ACK only after successful processing
+                
                 await channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
 
                 _logger.LogInformation("league.prepare processed for LeagueId={LeagueId}", @event.LeagueId);
@@ -78,21 +74,18 @@ public sealed class LeaguePrepareConsumer : BackgroundService
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to process league.prepare message. Body={Body}", body);
-
-                // NACK and requeue: false means dead-letter it, not spin forever
-                // Set to true only if you have idempotency guarantees
+                
                 await channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
             }
         };
 
         await channel.BasicConsumeAsync(
             queue: QueueName,
-            autoAck: false,          // manual ACK is non-negotiable in production
+            autoAck: false,   
             consumer: consumer,
             cancellationToken: stoppingToken
         );
-
-        // Keep alive until the host shuts down
+        
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
 }

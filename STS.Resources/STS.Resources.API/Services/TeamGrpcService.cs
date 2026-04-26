@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using STS.Resources.API.Attributes;
 using STS.Resources.API.Grpc;
 using STS.Resources.Application.Features.Team;
 using STS.Resources.Application.Interfaces;
@@ -35,6 +36,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.Team)]
     public override async Task<TeamResponse> GetTeam(GetTeamRequest request, ServerCallContext context)
     {
         try
@@ -51,7 +53,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
             throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
     }
-
+    
     public override async Task<TeamResponse> CreateTeam(CreateTeamRequest request, ServerCallContext context)
     {
         try
@@ -72,6 +74,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.Team)]
     public override async Task<TeamResponse> UpdateTeam(UpdateTeamRequest request, ServerCallContext context)
     {
         try
@@ -96,6 +99,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.Team)]
     public override async Task<Empty> DeleteTeam(DeleteTeamRequest request, ServerCallContext context)
     {
         try

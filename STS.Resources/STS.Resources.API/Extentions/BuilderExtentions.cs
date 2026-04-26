@@ -3,6 +3,7 @@ using STS.Resources.Infrastructure.Extentions;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using STS.Resources.API.Interceptors;
 
 namespace STS.Resources.API.Extentions;
 
@@ -17,7 +18,11 @@ public static class BuilderExtentions
                 listenOptions.Protocols = HttpProtocols.Http2;
             });
         });
-        builder.Services.AddGrpc();
+        builder.Services.AddGrpc(options =>
+        {
+            options.Interceptors.Add<OwnershipInterceptor>();
+        });
+        builder.Services.AddHttpContextAccessor();
         builder.Services.AddScoped<ILeagueRepository, LeagueRepository>();
         builder.Services.AddScoped<ITeamRepository, TeamRepository>();
         builder.Services.AddScoped<IStadiumRepository, StadiumRepository>();

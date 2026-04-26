@@ -16,6 +16,14 @@ public class LeagueRepository : ILeagueRepository
         _context = context;
     }
 
+    public async Task<int> GetCountByIdAndOwnerIdWithNoTracksAsync(Guid id, Guid ownerId)
+    {
+        return await _context.Leagues
+            .AsNoTracking()
+            .Where(l => l.Id == id)
+            .Where(l => l.OwnerId == ownerId)
+            .CountAsync();
+    }
     public async Task<League?> GetByIdAsync(Guid id)
     {
         return await _context.Leagues.FindAsync(id);

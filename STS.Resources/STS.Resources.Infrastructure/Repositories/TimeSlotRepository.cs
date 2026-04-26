@@ -18,6 +18,15 @@ public class TimeSlotRepository : ITimeSlotRepository
     {
         return await _context.TimeSlots.FindAsync(id);
     }
+    
+    public async Task<int> GetCountByIdAndOwnerIdWithNoTracksAsync(Guid id, Guid ownerId)
+    {
+        return await _context.TimeSlots.AsNoTracking()
+            .Where(ts => ts.Id == id)
+            .Include(ls => ls.League)
+            .Where(ts => ts.League.OwnerId == ownerId)
+            .CountAsync();
+    }
 
     public async Task<IEnumerable<TimeSlot>?> GetByLeagueIdAsync(Guid leagueId)
     {

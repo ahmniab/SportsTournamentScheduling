@@ -37,6 +37,23 @@ public class TimeSlotService : ITimeSlotService
         return timeSlots ?? throw new KeyNotFoundException("No time slots were found for the requested league.");
     }
 
+    public async Task<bool> VerifyOwnershipAsync(string timeSlotId, string ownerId)
+    {
+        if (!Guid.TryParse(timeSlotId, out var timeSlotIdGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(timeSlotId));
+        }
+
+        if (!Guid.TryParse(ownerId, out var ownerIdGuid))
+        {
+            throw new ArgumentException("Owner id must be a valid GUID.", nameof(ownerId));
+        }
+        var timeSlotCount 
+            = await _timeSlotRepository.GetCountByIdAndOwnerIdWithNoTracksAsync(timeSlotIdGuid, ownerIdGuid);
+        return  timeSlotCount > 0;
+        
+    }
+    
     public async Task<TimeSlot> CreateTimeSlotAsync(CreateTimeSlotCommand timeSlot)
     {
         if (!Guid.TryParse(timeSlot.LeagueId, out var leagueGuid))

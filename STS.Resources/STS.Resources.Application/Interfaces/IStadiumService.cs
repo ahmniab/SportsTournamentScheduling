@@ -10,4 +10,5 @@ public interface IStadiumService
     Task<Stadium> CreateStadiumAsync(CreateStadiumCommand stadium);
     Task<Stadium> UpdateStadiumAsync(UpdateStadiumCommand stadium);
     Task DeleteStadiumAsync(string id);
+    Task<bool> VerifyOwnershipAsync(string leagueId, string ownerId);
 }

@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using STS.Resources.API.Attributes;
 using STS.Resources.API.Grpc;
 using STS.Resources.Application.Features.TimeSlot;
 using STS.Resources.Application.Interfaces;
@@ -35,6 +36,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.TimeSlot)]
     public override async Task<TimeSlotResponse> GetTimeSlot(GetTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -51,7 +53,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
             throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
     }
-
+    
     public override async Task<TimeSlotResponse> CreateTimeSlot(CreateTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -76,6 +78,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.TimeSlot)]
     public override async Task<TimeSlotResponse> UpdateTimeSlot(UpdateTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -100,6 +103,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.TimeSlot)]
     public override async Task<Empty> DeleteTimeSlot(DeleteTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -113,6 +117,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.TimeSlot)]
     private static TimeSlotResponse MapTimeSlot(TimeSlot timeSlot)
     {
         return new TimeSlotResponse

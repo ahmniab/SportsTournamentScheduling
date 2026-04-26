@@ -2,6 +2,7 @@ using STS.Resources.Application.Interfaces;
 using STS.Resources.Application.Features.Stadium;
 using STS.Resources.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using STS.Resources.Application.Features;
 
 namespace STS.Resources.Application.Services;
 
@@ -99,5 +100,23 @@ public class StadiumService : IStadiumService
         }
 
         await _stadiumRepository.DeleteAsync(stadiumGuid);
+    }
+
+    public async Task<bool> VerifyOwnershipAsync(string stadiumId, string ownerId)
+    {
+        if (!Guid.TryParse(stadiumId, out var stadiumGuid))
+        {
+            throw new ArgumentException("id must be a guid");
+        }
+
+        if (!Guid.TryParse(ownerId, out var ownerGuid))
+        {
+            throw new ArgumentException("owner_id must be a guid");
+        }
+
+        var stadiumCount
+            = await _stadiumRepository.GetCountByIdAndOwnerIdWithNoTracksAsync(stadiumGuid, ownerGuid);
+        return stadiumCount > 0;
+        
     }
 }

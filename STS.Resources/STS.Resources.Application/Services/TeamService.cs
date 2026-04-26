@@ -35,6 +35,22 @@ public class TeamService : ITeamService
         return teams ?? throw new KeyNotFoundException("No teams were found for the requested league.");
     }
 
+    public async Task<bool> VerifyOwnershipAsync(string teamId, string ownerId)
+    {
+        if (!Guid.TryParse(teamId, out var teamGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(teamId));
+        }
+
+        if (!Guid.TryParse(ownerId, out var ownerGuid))
+        {
+            throw new ArgumentException("owner_id must be a valid GUID.", nameof(ownerId));
+        }
+        var teamCount = await _teamRepository.GetCountByIdAndOwnerIdWithNoTracksAsync(teamGuid, ownerGuid);
+        return teamCount > 0;
+        
+    }
+
     public async Task<Team> CreateTeamAsync(CreateTeamCommand team)
     {
         if (!Guid.TryParse(team.LeagueId, out var leagueGuid))

@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using STS.Resources.API.Attributes;
 using STS.Resources.API.Grpc;
 using STS.Resources.Application.Features.Stadium;
 using STS.Resources.Application.Interfaces;
@@ -35,6 +36,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.Stadium)]
     public override async Task<StadiumResponse> GetStadium(GetStadiumRequest request, ServerCallContext context)
     {
         try
@@ -51,7 +53,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
             throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
     }
-
+    
     public override async Task<StadiumResponse> CreateStadium(CreateStadiumRequest request, ServerCallContext context)
     {
         try
@@ -72,6 +74,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.Stadium)]
     public override async Task<StadiumResponse> UpdateStadium(UpdateStadiumRequest request, ServerCallContext context)
     {
         try
@@ -96,6 +99,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
         }
     }
 
+    [RequireOwnership(ResourceType.Stadium)]
     public override async Task<Empty> DeleteStadium(DeleteStadiumRequest request, ServerCallContext context)
     {
         try

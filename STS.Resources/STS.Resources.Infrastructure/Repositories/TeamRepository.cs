@@ -18,6 +18,16 @@ public class TeamRepository : ITeamRepository
     {
         return await _context.Teams.FindAsync(id);
     }
+    
+    public async Task<int> GetCountByIdAndOwnerIdWithNoTracksAsync(Guid id, Guid ownerId)
+    {
+        return await _context.Teams.AsNoTracking()
+            .Where(t => t.Id == id)
+            .Include(t => t.League)
+            .Where(t => t.League.OwnerId == ownerId)
+            .CountAsync();
+
+    }
 
     public async Task<IEnumerable<Team>?> GetByLeagueIdAsync(Guid leagueId)
     {

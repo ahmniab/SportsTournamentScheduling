@@ -13,6 +13,8 @@ public class StadiumRepository : IStadiumRepository
     {
         _context = context;
     }
+    
+    
 
     public async Task<Stadium?> GetByIdAsync(Guid id)
     {
@@ -24,6 +26,15 @@ public class StadiumRepository : IStadiumRepository
         return await _context.Stadiums
             .Where(stadium => stadium.LeagueId == leagueId)
             .ToListAsync();
+    }
+
+    public async Task<int> GetCountByIdAndOwnerIdWithNoTracksAsync(Guid id, Guid ownerId)
+    {
+        return await _context.Stadiums.AsNoTracking()
+            .Where(stadium => stadium.Id == id)
+            .Include(stadium => stadium.League)
+            .Where(stadium => stadium.League.OwnerId == ownerId)
+            .CountAsync();
     }
 
     public async Task<Stadium> AddAsync(Stadium stadium)

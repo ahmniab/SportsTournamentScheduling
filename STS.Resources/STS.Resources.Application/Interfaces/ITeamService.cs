@@ -10,4 +10,5 @@ public interface ITeamService
     Task<Team> CreateTeamAsync(CreateTeamCommand team);
     Task<Team> UpdateTeamAsync(UpdateTeamCommand team);
     Task DeleteTeamAsync(string id);
+    Task<bool> VerifyOwnershipAsync(string leagueId, string teamId);
 }

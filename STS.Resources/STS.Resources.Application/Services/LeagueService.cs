@@ -121,7 +121,7 @@ public class LeagueService : ILeagueService
         }
     }
 
-    public async Task DeleteLeagueAsync(String Id)
+    public async Task DeleteLeagueAsync(string Id)
     {
         if (!Guid.TryParse(Id, out var leagueGuid))
         {
@@ -133,5 +133,21 @@ public class LeagueService : ILeagueService
         await _timeSlotRepository.DeleteTimeSlotAsyncByLeagueIdAsync(leagueGuid);
         await _leagueRepository.DeleteAsync(leagueGuid);
     }
+
+    public async Task<bool> VerifyOwnershipAsync(string leagueId, string ownerId)
+    {
+        if (!Guid.TryParse(leagueId, out var leagueGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(leagueId));
+        }
+        if (!Guid.TryParse(ownerId, out var ownerGuid))
+        {
+            throw new ArgumentException("id must be a valid GUID.", nameof(leagueId));
+        }
+
+        var leagueCount = await _leagueRepository.GetCountByIdAndOwnerIdWithNoTracksAsync(leagueGuid, ownerGuid);
+        return leagueCount > 0;
+
+    } 
 
 }
