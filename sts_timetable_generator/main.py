@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
     logger.info("Starting timetable generator service...")
 
-    from configure import configure_scheduler
+    from sts_timetable_generator.configure import configure_scheduler
 
     try:
         configure_scheduler()
