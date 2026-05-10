@@ -13,8 +13,11 @@ namespace STS.BFF.API.Controllers
         {
             return Challenge(new AuthenticationProperties 
             { 
-                RedirectUri = returnUrl 
+                RedirectUri = returnUrl,
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(14)
             }, OpenIdConnectDefaults.AuthenticationScheme);
+            
         }
     }
 }
