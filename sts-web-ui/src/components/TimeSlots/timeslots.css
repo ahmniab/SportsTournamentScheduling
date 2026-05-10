@@ -1,0 +1,127 @@
+/* Time slots component styles — aligned with the existing team/stadium cards */
+.team-list {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin: 0;
+  padding: 0;
+}
+
+.team {
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  color: var(--color-text);
+}
+
+.team-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.team-meta {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.team-card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.team-name {
+  margin: 0;
+}
+
+.team-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.team-edit-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+  color: rgba(230,238,248,0.9);
+}
+
+.team-edit-form input[type="text"],
+.team-edit-form input[type="datetime-local"],
+.team-edit-form input[type="url"] {
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  margin-top: 6px;
+  font-size: 14px;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.team-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.team-actions .btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--color-primary);
+  color: var(--color-surface);
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.team-actions .btn-secondary {
+  background: transparent;
+  border-color: rgba(255,255,255,0.04);
+  color: var(--color-text);
+}
+
+.empty {
+  color: rgba(230,238,248,0.7);
+  padding: 12px;
+}
+
+@media (max-width: 520px) {
+  .team-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.team-create {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%);
+  border: 1px solid rgba(255,255,255,0.04);
+  padding: 14px;
+}
+
+.team-create h3 {
+  margin: 0 0 8px 0;
+  color: var(--color-text);
+  font-size: 16px;
+}
+
+.team-edit-form input:focus {
+  outline: 3px solid rgba(59,130,246,0.18);
+  border-color: #3B82F6;
+}
+
+.team-create .btn {
+  background: #3B82F6;
+  border-color: transparent;
+}
+
+.team-create .btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

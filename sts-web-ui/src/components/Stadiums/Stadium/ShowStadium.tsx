@@ -11,7 +11,7 @@ const ShowStadium: React.FC<{ stadium: Stadium }> = ({ stadium }) => {
         </div>
         {img && (
           <div className="team-image">
-            <img src={img} alt={`${stadium.name} image`} style={{ width: '100%' }}/>
+            <img src={img} alt={stadium.name} style={{ width: '100%' }}/>
           </div>
         )}
       </div>

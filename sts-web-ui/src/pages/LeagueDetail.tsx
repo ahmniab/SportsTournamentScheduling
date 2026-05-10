@@ -4,6 +4,8 @@ import api from '../lib/api';
 import { toast } from 'react-toastify';
 import TeamsList from '../components/Teams';
 import StadiumsList from '../components/Stadiums';
+import TimeSlotsList from '../components/TimeSlots';
+import { LeagueGeneration } from '../components/LeagueGeneretion';
 
 function isoToLocalDatetime(iso?: string) {
   if (!iso) return '';
@@ -157,6 +159,8 @@ export default function LeagueDetail(): React.ReactElement {
     </div>
     <TeamsList leagueId={id} />
     <StadiumsList leagueId={id} />
+    <TimeSlotsList leagueId={id} />
+    <LeagueGeneration leagueId={id || ''}/>
     </>
   );
 }
