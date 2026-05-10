@@ -10,8 +10,8 @@ build/
 .eggs/
 .venv/
 venv/
-env/
-.env
+**/env/
+**/.env
 
 # IDE
 .idea/
