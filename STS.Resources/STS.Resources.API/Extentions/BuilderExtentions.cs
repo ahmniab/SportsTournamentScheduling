@@ -31,7 +31,8 @@ public static class BuilderExtentions
         builder.Services.AddScoped<ITimeSlotService, TimeSlotService>();
         builder.Services.AddInfrastructure(
             builder.Configuration,
-            builder.Environment.IsDevelopment());
+            builder.Environment.IsDevelopment()
+        );
 
         return builder;
     }

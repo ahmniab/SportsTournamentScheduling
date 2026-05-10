@@ -25,6 +25,7 @@ public class ResourceGuardInterceptor: Interceptor
         ServerCallContext context,
         UnaryServerMethod<TRequest, TResponse> continuation)
     {
+        return await continuation(request, context);
         var httpContext = _httpContextAccessor.HttpContext;
         var endpoint = httpContext?.GetEndpoint();
         var secureResourceAttribute = endpoint?.Metadata.GetMetadata<SecureResourceAttribute>();

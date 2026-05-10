@@ -79,7 +79,7 @@ public class TimeSlotService : ITimeSlotService
         }
 
         await _timeSlotRepository.AddAsync(newTimeSlot);
-        await _permissionService.AddResourceAsync(newTimeSlot.LeagueId.ToString(), newTimeSlot.Id.ToString());
+        // await _permissionService.AddResourceAsync(newTimeSlot.LeagueId.ToString(), newTimeSlot.Id.ToString());
         return newTimeSlot;
     }
 
