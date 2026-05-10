@@ -52,10 +52,9 @@ public class TeamsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            if (accessToken == null) Unauthorized();
             var request = new GetTeamRequest { Id = id.ToString() };
             var response = await _teamService.GetTeamAsync(request, headers);
             return Ok(TeamDto.From(response));
