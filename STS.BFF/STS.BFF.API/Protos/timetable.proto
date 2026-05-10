@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+option csharp_namespace = "STS.TimeTables.API.Grpc";
+
+package timetables;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
+
+service TimeTablesService {
+  rpc GetLeagueSummary    (LeagueRequest)                  returns (GetLeagueSummaryResponse);
+  rpc GetFullLeague       (LeagueRequest)                  returns (GetFullLeagueResponse);
+  rpc DeleteLeague        (LeagueRequest)                  returns (google.protobuf.Empty);
+  rpc GetMatchRequest     (MatchRequest)                   returns (MatchResponse);
+  rpc GenerateTimeTable   (GenerateTimeTableRequest)       returns (google.protobuf.Empty);
+  rpc GetLeagueJobStatus  (LeagueRequest)                  returns (LeagueJobStatusResponse);
+}
+
+/////////////
+message LeagueRequest {
+  string id = 1;
+}
+
+message GetLeagueSummaryResponse {
+  string id = 1;
+  google.protobuf.Timestamp generated_at = 2;
+  float best_fitness = 3;
+}
+
+message GetFullLeagueResponse {
+  string id = 1;
+  google.protobuf.Timestamp generated_at = 2;
+  float best_fitness = 3;
+  repeated MatchResponse matches = 4;
+}
+/////////////
+
+message MatchRequest {
+  string id = 1;
+}
+
+message MatchResponse {
+  string id = 1;
+  string league_id = 2;
+  string team1_id = 3;
+  string team2_id = 4;
+  string time_slot_id = 5;
+  string stadium_id = 6;
+  google.protobuf.Timestamp date = 7;  
+}
+/////////////
+
+message GenerateTimeTableRequest {
+  string league_id = 1;
+}
+
+////////////
+
+message LeagueJobStatusResponse {
+  string league_id = 1;
+  LeagueJobStatus status = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp started_at = 4;
+  optional string error_message = 5;
+}
+
+enum LeagueJobStatus {
+  CREATED = 0;
+  PREPARED = 1;
+  GENERATING = 2;
+  COMPLETED = 3;
+  FAILED = 4;
+}
