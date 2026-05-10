@@ -1,5 +1,4 @@
 using Grpc.Core;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using STS.BFF.API.Dtos;
 using STS.BFF.API.Dtos.Responses;
@@ -9,7 +8,6 @@ namespace STS.BFF.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class StadiumsController : ControllerBase
 {
     private readonly StadiumService.StadiumServiceClient _stadiumService;

@@ -1,5 +1,6 @@
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using STS.BFF.API.Dtos;
@@ -10,7 +11,6 @@ namespace STS.BFF.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class LeaguesController : ControllerBase
 {
     private readonly LeagueService.LeagueServiceClient _leagueService;
@@ -25,11 +25,11 @@ public class LeaguesController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
-            var request = new GetLeaguesRequest { OwnerId = userId.Value };
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
+            var request = new GetLeaguesRequest { OwnerId = userId };
             var response = await _leagueService.GetLeaguesAsync(request, headers);
             return Ok(response.Leagues.Select(LeagueSummaryDto.From).ToList());
         }
@@ -48,13 +48,20 @@ public class LeaguesController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new GetLeagueRequest { Id = id.ToString() };
             var response = await _leagueService.GetLeagueAsync(request, headers);
             return Ok(LeagueDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.PermissionDenied)
+        {
+            return Forbid();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -64,10 +71,6 @@ public class LeaguesController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
-        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.PermissionDenied)
-        {
-            return Forbid();
-        }
     }
 
     [HttpPost]
@@ -75,13 +78,22 @@ public class LeaguesController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
+            if (!User.Identity?.IsAuthenticated ?? true)
+            {
+                return Unauthorized("No active session found.");
+            }
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                         ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("User ID (sub) not found in session claims.");
+            }
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
             var request = new CreateLeagueRequest
             {
-                OwnerId = userId.Value,
+                OwnerId = userId,
                 Name = dto.Name,
                 StartDate = Timestamp.FromDateTime(DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc)),
             };
@@ -91,13 +103,17 @@ public class LeaguesController : ControllerBase
             var result = LeagueDto.From(response);
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
-        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
         {
-            return BadRequest(ex.Message);
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.PermissionDenied)
         {
             return Forbid();
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
+        {
+            return BadRequest(ex.Message);
         }
     }
 
@@ -106,10 +122,9 @@ public class LeaguesController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
             var request = new UpdateLeagueRequest
             {
                 Id = id.ToString(),
@@ -120,6 +135,10 @@ public class LeaguesController : ControllerBase
 
             var response = await _leagueService.UpdateLeagueAsync(request, headers);
             return Ok(LeagueDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -140,13 +159,16 @@ public class LeaguesController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
             var request = new DeleteLeagueRequest { Id = id.ToString() };
             await _leagueService.DeleteLeagueAsync(request, headers);
             return NoContent();
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {

@@ -1,4 +1,7 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using STS.BFF.API.Grpc;
 
 namespace STS.BFF.API.Extensions;
@@ -7,6 +10,17 @@ public static class BuilderExtensions
 {
     public static WebApplicationBuilder AddStsApi(this WebApplicationBuilder builder)
     {
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy
+                    .SetIsOriginAllowed(origin => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials(); 
+            });
+        });
         builder.Services.AddHttpLogging(logging =>
         {
             logging.LoggingFields = Microsoft.AspNetCore.HttpLogging.HttpLoggingFields.All;
@@ -23,17 +37,35 @@ public static class BuilderExtensions
 
     public static WebApplicationBuilder AddAuthentication(this WebApplicationBuilder builder)
     {
-        builder.Services.AddAuthentication("Bearer")
-            .AddJwtBearer("Bearer", options =>
+        builder.Services.AddAuthentication(options =>
             {
-                options.Authority =  builder.Configuration["AuthServer:Authority"];
-                options.MetadataAddress = builder.Configuration["AuthServer:MetadataAddress"] 
-                                          ?? throw new NullReferenceException("AuthServer:MetadataAddress is null");
-                options.Audience  =  builder.Configuration["AuthServer:Audience"];
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            })
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.Cookie.Name = "BFF-Session"; 
+                options.Cookie.SameSite = SameSiteMode.Lax;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+            })
+            .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+            {
+                options.Authority = builder.Configuration["AuthServer:Url"];
+                options.MetadataAddress = builder.Configuration["AuthServer:MetadataAddress"];
+                options.ClientId = "bff-client";
+                options.ClientSecret = builder.Configuration["AuthServer:ClientSecret"];
+                options.ResponseType = "code";
+                options.SaveTokens = true;
+                options.GetClaimsFromUserInfoEndpoint = true;
                 options.RequireHttpsMetadata = false;
-                options.TokenValidationParameters.ValidIssuer = builder.Configuration["AuthServer:Issuers"];
-                options.TokenValidationParameters.ValidateAudience = false;
-                
+                options.PushedAuthorizationBehavior = PushedAuthorizationBehavior.Disable;
+    
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = "name",
+                    RoleClaimType = "role"
+                };
             });
         return builder;
     }

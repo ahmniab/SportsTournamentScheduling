@@ -9,7 +9,6 @@ namespace STS.BFF.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class TeamsController : ControllerBase
 {
     private readonly TeamService.TeamServiceClient _teamService;
@@ -19,8 +18,8 @@ public class TeamsController : ControllerBase
         _teamService = teamService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid leagueId)
+    [HttpGet("getByLeagueId/{leagueId}")]
+    public async Task<IActionResult> GetAll([FromRoute] Guid leagueId)
     {
         try
         {

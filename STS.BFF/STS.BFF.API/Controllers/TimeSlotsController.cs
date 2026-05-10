@@ -9,7 +9,6 @@ namespace STS.BFF.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class TimeSlotsController : ControllerBase
 {
     private readonly TimeSlotService.TimeSlotServiceClient _timeSlotService;
