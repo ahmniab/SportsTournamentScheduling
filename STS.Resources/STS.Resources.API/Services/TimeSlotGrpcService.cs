@@ -36,7 +36,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.TimeSlot)]
+    [SecureResource(AccessLevel.Reader)]
     public override async Task<TimeSlotResponse> GetTimeSlot(GetTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -78,7 +78,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.TimeSlot)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<TimeSlotResponse> UpdateTimeSlot(UpdateTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -103,7 +103,7 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.TimeSlot)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<Empty> DeleteTimeSlot(DeleteTimeSlotRequest request, ServerCallContext context)
     {
         try
@@ -117,7 +117,6 @@ public class TimeSlotGrpcService : TimeSlotService.TimeSlotServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.TimeSlot)]
     private static TimeSlotResponse MapTimeSlot(TimeSlot timeSlot)
     {
         return new TimeSlotResponse

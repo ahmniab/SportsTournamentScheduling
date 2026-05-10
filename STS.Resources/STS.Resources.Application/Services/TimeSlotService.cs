@@ -10,10 +10,12 @@ public class TimeSlotService : ITimeSlotService
 {
     private const int MaxTimeSlotsPerLeague = 3;
     private readonly ITimeSlotRepository _timeSlotRepository;
+    private readonly ILeaguePermissionService _permissionService;
 
-    public TimeSlotService(ITimeSlotRepository timeSlotRepository)
+    public TimeSlotService(ITimeSlotRepository timeSlotRepository, ILeaguePermissionService permissionService)
     {
         _timeSlotRepository = timeSlotRepository;
+        _permissionService = permissionService; 
     }
 
     public async Task<TimeSlot> GetTimeSlotByIdAsync(string id)
@@ -76,7 +78,9 @@ public class TimeSlotService : ITimeSlotService
             throw new InvalidOperationException($"A league can have at most {MaxTimeSlotsPerLeague} time slots.");
         }
 
-        return await _timeSlotRepository.AddAsync(newTimeSlot);
+        await _timeSlotRepository.AddAsync(newTimeSlot);
+        await _permissionService.AddResourceAsync(newTimeSlot.LeagueId.ToString(), newTimeSlot.Id.ToString());
+        return newTimeSlot;
     }
 
     public async Task<TimeSlot> UpdateTimeSlotAsync(UpdateTimeSlotCommand timeSlot)
@@ -115,8 +119,10 @@ public class TimeSlotService : ITimeSlotService
         {
             throw new ArgumentException("id must be a valid GUID.", nameof(id));
         }
-
+        var timeSlot = await _timeSlotRepository.GetByIdAsync(timeSlotGuid);
         await _timeSlotRepository.DeleteAsync(timeSlotGuid);
+        // if (timeSlot != null)
+        //     await _permissionService.DeleteResourceAsync(timeSlot.LeagueId.ToString(), timeSlot.Id.ToString());
     }
 
     private static void ValidateTimeSlot(TimeSlot timeSlot, bool validateLeagueId = true)

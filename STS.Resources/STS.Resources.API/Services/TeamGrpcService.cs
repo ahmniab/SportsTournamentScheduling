@@ -36,7 +36,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.Team)]
+    [SecureResource(AccessLevel.Reader)]
     public override async Task<TeamResponse> GetTeam(GetTeamRequest request, ServerCallContext context)
     {
         try
@@ -74,7 +74,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.Team)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<TeamResponse> UpdateTeam(UpdateTeamRequest request, ServerCallContext context)
     {
         try
@@ -99,7 +99,7 @@ public class TeamGrpcService : TeamService.TeamServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.Team)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<Empty> DeleteTeam(DeleteTeamRequest request, ServerCallContext context)
     {
         try

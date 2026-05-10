@@ -2,7 +2,8 @@ using STS.Resources.Domain.Entities;
 using STS.Resources.Application.Interfaces;
 using STS.Resources.Application.Features.League;
 using Microsoft.EntityFrameworkCore;
-using STS.Resources.Application.Extentions;
+using STS.Resources.API.Attributes;
+using STS.Resources.Application.Extensions;
 using STS.Resources.Application.Features;
 using STS.Resources.Application.Models.Responses;
 
@@ -14,6 +15,7 @@ public class LeagueService : ILeagueService
     private readonly ITeamRepository _teamRepository;
     private readonly IStadiumRepository _stadiumRepository;
     private readonly ITimeSlotRepository _timeSlotRepository;
+    private readonly ILeaguePermissionService _permissionService;
 
     public LeagueService(ILeagueRepository leagueRepository, ITeamRepository teamRepository, IStadiumRepository stadiumRepository, ITimeSlotRepository timeSlotRepository)
     {
@@ -49,7 +51,7 @@ public class LeagueService : ILeagueService
         }
         return league.BuildLeagueResponse(command.IncludeOptions);
     }
-
+    
     public async Task<IEnumerable<League>> GetLeaguesByOwnerIdAsync(string ownerId)
     {
         if (!Guid.TryParse(ownerId, out var ownerGuid))
@@ -82,7 +84,10 @@ public class LeagueService : ILeagueService
             CreatedAt = DateTime.UtcNow,
             LogoUrl = league.LogoUrl
         };
-        return await _leagueRepository.AddAsync(newLeague);
+        newLeague = await _leagueRepository.AddAsync(newLeague);
+        // await _permissionService.AddAccessAsync( newLeague.Id.ToString(), newLeague.OwnerId.ToString(), AccessLevel.Owner);
+        // await _permissionService.AddResourceAsync( newLeague.Id.ToString(), newLeague.Id.ToString());
+        return newLeague;
     }
 
     public async Task<League> UpdateLeagueAsync(UpdateLeagueCommand league)
@@ -132,22 +137,8 @@ public class LeagueService : ILeagueService
         await _stadiumRepository.DeleteStadiumAsyncByLeagueIdAsync(leagueGuid);
         await _timeSlotRepository.DeleteTimeSlotAsyncByLeagueIdAsync(leagueGuid);
         await _leagueRepository.DeleteAsync(leagueGuid);
+        // await _permissionService.DeleteLeagueAsync(leagueGuid.ToString());
     }
-
-    public async Task<bool> VerifyOwnershipAsync(string leagueId, string ownerId)
-    {
-        if (!Guid.TryParse(leagueId, out var leagueGuid))
-        {
-            throw new ArgumentException("id must be a valid GUID.", nameof(leagueId));
-        }
-        if (!Guid.TryParse(ownerId, out var ownerGuid))
-        {
-            throw new ArgumentException("id must be a valid GUID.", nameof(leagueId));
-        }
-
-        var leagueCount = await _leagueRepository.GetCountByIdAndOwnerIdWithNoTracksAsync(leagueGuid, ownerGuid);
-        return leagueCount > 0;
-
-    } 
+    
 
 }

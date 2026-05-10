@@ -38,7 +38,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.League)]
+    [SecureResource(AccessLevel.Reader)]
     public override async Task<LeagueResponse> GetLeague(GetLeagueRequest request, ServerCallContext context)
     {
         try
@@ -78,7 +78,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
 
     }
 
-    [RequireOwnership(ResourceType.League)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<LeagueResponse> UpdateLeague(UpdateLeagueRequest request, ServerCallContext context)
     {
         try
@@ -103,6 +103,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
         }
 
     }
+    [SecureResource(AccessLevel.Owner)]
     public override async Task<Empty> DeleteLeague(DeleteLeagueRequest request, ServerCallContext context)
     {
         try
@@ -115,7 +116,7 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
             throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
         }
     }
-
+    
     private static LeagueResponse MapLeague(League league)
     {
         var response = new LeagueResponse
@@ -138,11 +139,11 @@ public class LeagueGrpcService : LeagueService.LeagueServiceBase
         {
             Id = league.Id.ToString(),
             Name = league.Name,
+            LogoUrl = league.LogoUrl,
             CreatedAt = ToUtcTimestamp(league.CreatedAt),
             StartDate = ToUtcTimestamp(league.StartDate),
         };
     }
-
     private static Timestamp ToUtcTimestamp(DateTime value)
     {
         var utcValue = value.Kind switch

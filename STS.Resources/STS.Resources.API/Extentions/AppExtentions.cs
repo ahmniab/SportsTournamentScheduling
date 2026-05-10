@@ -6,10 +6,18 @@ public static class AppExtentions
 {
     public static WebApplication UseSTSResourcesApi(this WebApplication app)
     {
-        app.MapGrpcService<LeagueGrpcService>();
-        app.MapGrpcService<TeamGrpcService>();
-        app.MapGrpcService<StadiumGrpcService>();
-        app.MapGrpcService<TimeSlotGrpcService>();
+        app.UseAuthentication();
+        app.UseAuthorization();
+        
+        app.MapGrpcService<LeagueGrpcService>()
+            .RequireAuthorization();
+        app.MapGrpcService<TeamGrpcService>()
+            .RequireAuthorization();
+        app.MapGrpcService<StadiumGrpcService>()
+            .RequireAuthorization();
+        app.MapGrpcService<TimeSlotGrpcService>()
+            .RequireAuthorization();
+        
         return app;
     }
 }

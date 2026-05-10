@@ -36,7 +36,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.Stadium)]
+    [SecureResource(AccessLevel.Reader)]
     public override async Task<StadiumResponse> GetStadium(GetStadiumRequest request, ServerCallContext context)
     {
         try
@@ -74,7 +74,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.Stadium)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<StadiumResponse> UpdateStadium(UpdateStadiumRequest request, ServerCallContext context)
     {
         try
@@ -99,7 +99,7 @@ public class StadiumGrpcService : StadiumService.StadiumServiceBase
         }
     }
 
-    [RequireOwnership(ResourceType.Stadium)]
+    [SecureResource(AccessLevel.Writer)]
     public override async Task<Empty> DeleteStadium(DeleteStadiumRequest request, ServerCallContext context)
     {
         try

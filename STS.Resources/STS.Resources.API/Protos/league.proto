@@ -13,6 +13,7 @@ service LeagueService {
   rpc CreateLeague    (CreateLeagueRequest)                returns (LeagueResponse);
   rpc UpdateLeague    (UpdateLeagueRequest)                returns (LeagueResponse);
   rpc DeleteLeague    (DeleteLeagueRequest)                returns (google.protobuf.Empty);
+  rpc Authorize       (AuthorizeRequest)                   returns (google.protobuf.Empty);
 }
 /// League Response /////////
 
@@ -100,4 +101,11 @@ message UpdateLeagueRequest {
   string name = 3;
   google.protobuf.Timestamp start_date = 5;
   optional string logo_url = 6;
+}
+
+///////
+
+message AuthorizeRequest {
+  string league_id = 1;
+  string owner_id = 2;
 }

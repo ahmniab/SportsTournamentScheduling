@@ -9,10 +9,12 @@ namespace STS.Resources.Application.Services;
 public class StadiumService : IStadiumService
 {
     private readonly IStadiumRepository _stadiumRepository;
+    private readonly ILeaguePermissionService _permissionService;
 
-    public StadiumService(IStadiumRepository stadiumRepository)
+    public StadiumService(IStadiumRepository stadiumRepository,  ILeaguePermissionService permissionService)
     {
         _stadiumRepository = stadiumRepository;
+        _permissionService = permissionService;
     }
 
     public async Task<Stadium> GetStadiumByIdAsync(string id)
@@ -55,7 +57,9 @@ public class StadiumService : IStadiumService
             Logo = stadium.Logo
         };
 
-        return await _stadiumRepository.AddAsync(newStadium);
+        await _stadiumRepository.AddAsync(newStadium);
+        // await _permissionService.AddResourceAsync(newStadium.LeagueId.ToString(), newStadium.Id.ToString());
+        return newStadium;
     }
 
     public async Task<Stadium> UpdateStadiumAsync(UpdateStadiumCommand stadium)
@@ -98,8 +102,10 @@ public class StadiumService : IStadiumService
         {
             throw new ArgumentException("id must be a valid GUID.", nameof(id));
         }
-
+        // var stadium = await _stadiumRepository.GetByIdAsync(stadiumGuid);
         await _stadiumRepository.DeleteAsync(stadiumGuid);
+        // if (stadium != null)
+        //     await _permissionService.DeleteResourceAsync(stadium.LeagueId.ToString(), stadium.Id.ToString());
     }
 
     public async Task<bool> VerifyOwnershipAsync(string stadiumId, string ownerId)

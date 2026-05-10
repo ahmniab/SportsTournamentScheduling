@@ -1,7 +1,7 @@
-using System.Text.Json;
-using System.Globalization;
-using Microsoft.Extensions.Caching.Distributed;
+using StackExchange.Redis;
+using STS.Resources.Application.Extensions;
 using STS.Resources.Application.Interfaces;
+using STS.Resources.Domain.Entities;
 using STS.Resources.Application.Models.Responses;
 
 namespace STS.Resources.Application.Features.League.Commands.PrepareLeague;
@@ -9,41 +9,45 @@ namespace STS.Resources.Application.Features.League.Commands.PrepareLeague;
 public sealed class PrepareLeagueHandler
 {
     private readonly ILeagueService _leagueRepository;
-    private readonly IDistributedCache _cache;
-    private readonly ILeagueReadyPublisher _publisher;
+    private readonly IDatabase _db;
+    private readonly ILeagueReadyPublisher _leagueReadyPublisher;
 
     public PrepareLeagueHandler(
         ILeagueService leagueRepository,
-        IDistributedCache cache,
+        IConnectionMultiplexer redis,
         ILeagueReadyPublisher publisher)
     {
         _leagueRepository = leagueRepository;
-        _cache = cache;
-        _publisher = publisher;
+        _db = redis.GetDatabase();
+        _leagueReadyPublisher = publisher;
     }
 
     public async Task HandleAsync(PrepareLeagueCommand command, CancellationToken ct = default)
     {
-        var league = await GetLeagueData(command.LeagueId);
-        
-        var redisKey = $"league:prepared:{command.LeagueId}";
-
-        var serialized = JsonSerializer.Serialize(league);
-
-        await _cache.SetStringAsync(
-            redisKey,
-            serialized,
-            new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(30)
-            },
-            ct
-        );
-
-        await _publisher.PublishAsync(new PrepareLeagueResult
+        var leagueJob = await _db.GetLeagueJobAsync(command.LeagueId) 
+                        ??  throw new InvalidOperationException($"Could not parse league job ID {command.LeagueId}");
+        try
         {
-            RedisKey = redisKey
-        }, ct);
+            LeagueResponse league = await GetLeagueData(command.LeagueId);
+            var redisKey = await _db.SetLeagueAsync(league, ct);
+        
+            leagueJob.Status = LeagueJobStatus.Prepared;
+            await _db.SetLeagueJobAsync(leagueJob, ct);
+        
+            await _leagueReadyPublisher.PublishAsync(new PrepareLeagueResult
+            {
+                RedisKey = redisKey,
+                LeagueId = command.LeagueId
+            }, ct);
+        }
+        catch (Exception ex)
+        {
+            leagueJob.Status = LeagueJobStatus.Failed;
+            leagueJob.ErrorMessage = ex.Message;
+            
+            await _db.SetLeagueJobAsync(leagueJob, ct);
+        }
+        
     }
 
     private async Task<LeagueResponse> GetLeagueData(Guid leagueId)
@@ -60,9 +64,9 @@ public sealed class PrepareLeagueHandler
         };
         
         var league = await _leagueRepository.GetLeagueByIdAsync(cmd);
-        if (league.Teams != null && !league.Teams.Any())
+        if (league.Teams != null && league.Teams.Count() <= 2)
         {
-            throw new InvalidOperationException("You do not have any teams for this league");
+            throw new InvalidOperationException("You do not have enough teams for this league");
         }
 
         if (league.Stadiums != null && !league.Stadiums.Any())
@@ -78,4 +82,5 @@ public sealed class PrepareLeagueHandler
         return league;
 
     }
+    
 }

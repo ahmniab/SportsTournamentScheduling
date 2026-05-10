@@ -2,16 +2,19 @@ using STS.Resources.Application.Interfaces;
 using STS.Resources.Application.Features.Team;
 using STS.Resources.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
+using STS.Resources.API.Attributes;
 
 namespace STS.Resources.Application.Services;
 
 public class TeamService : ITeamService
 {
     private readonly ITeamRepository _teamRepository;
+    private readonly ILeaguePermissionService _permissionService;
 
-    public TeamService(ITeamRepository teamRepository)
+    public TeamService(ITeamRepository teamRepository, ILeaguePermissionService permissionService)
     {
         _teamRepository = teamRepository;
+        _permissionService = permissionService;
     }
 
     public async Task<Team> GetTeamByIdAsync(string id)
@@ -71,7 +74,9 @@ public class TeamService : ITeamService
             LogoUrl = team.LogoUrl
         };
 
-        return await _teamRepository.AddAsync(newTeam);
+        await _teamRepository.AddAsync(newTeam);
+        // await _permissionService.AddAccessAsync(newTeam.LeagueId.ToString(), newTeam.Id.ToString(), AccessLevel.Owner);
+        return newTeam;
     }
 
     public async Task<Team> UpdateTeamAsync(UpdateTeamCommand team)
@@ -115,6 +120,9 @@ public class TeamService : ITeamService
             throw new ArgumentException("id must be a valid GUID.", nameof(id));
         }
 
+        // var team = await _teamRepository.GetByIdAsync(teamGuid);
         await _teamRepository.DeleteAsync(teamGuid);
+        // if(team != null) 
+        //     await _permissionService.DeleteResourceAsync(team.LeagueId.ToString(), team.Id.ToString());
     }
 }

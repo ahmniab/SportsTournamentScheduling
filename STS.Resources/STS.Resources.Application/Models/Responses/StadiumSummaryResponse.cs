@@ -4,7 +4,7 @@ namespace STS.Resources.Application.Models.Responses;
 
 public class StadiumSummaryResponse
 {
-    public string Id { get; set; }
+    public string Id { get; set; } = string.Empty;
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? Name { get; set; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

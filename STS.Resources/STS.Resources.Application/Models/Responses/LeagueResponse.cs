@@ -7,7 +7,7 @@ public class LeagueResponse
 {
     public Guid Id { get; set; }
     public Guid OwnerId { get; set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 
     public DateTime StartDate { get; set; }

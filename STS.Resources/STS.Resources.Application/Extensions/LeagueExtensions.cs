@@ -3,9 +3,9 @@ using STS.Resources.Application.Models.Responses;
 using STS.Resources.Application.Features.League;
 using STS.Resources.Application.Features;
 
-namespace STS.Resources.Application.Extentions;
+namespace STS.Resources.Application.Extensions;
 
-public static class LeagueExtentions
+public static class LeagueExtensions
 {
     
     public static LeagueResponse BuildLeagueResponse(this League league, LeagueIncludeOptions? options)
