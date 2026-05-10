@@ -49,12 +49,13 @@ const EditTeam: React.FC<{ team: Team }> = ({ team }) => {
 
             <label>
                 Name
-                <input value={name} onChange={(e) => setName(e.target.value)} required />
+                <input className="text-box" value={name} onChange={(e) => setName(e.target.value)} required />
             </label>
 
             <label>
                 Logo URL
                 <input
+                    className="text-box"
                     placeholder="https://... or leave blank to upload"
                     value={logoUrl}
                     onChange={(e) => {
@@ -67,7 +68,7 @@ const EditTeam: React.FC<{ team: Team }> = ({ team }) => {
 
             <label>
                 Or upload logo
-                <input type="file" accept="image/*" onChange={handleFileChange} />
+                <input className="text-box" type="file" accept="image/*" onChange={handleFileChange} />
             </label>
 
             {previewUrl && (
@@ -78,7 +79,6 @@ const EditTeam: React.FC<{ team: Team }> = ({ team }) => {
 
             <div className="team-actions">
                 <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
-                <button type="button" onClick={() => window.history.back()}>Cancel</button>
             </div>
         </form>
     );

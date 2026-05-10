@@ -76,6 +76,7 @@ export default function LeaguesPanel(): React.ReactElement {
         }}
       >
         <input
+          className="text-box"
           aria-label="New league name"
           placeholder="New league name"
           value={newName}

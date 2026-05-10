@@ -1,7 +1,5 @@
 import React from 'react';
 import { Team } from '../../../types/types';
-import '../teams.css';
-
 const ShowTeam: React.FC<{ team: Team }> = ({ team }) => {
   return (
     <div className="team-card">
@@ -11,7 +9,7 @@ const ShowTeam: React.FC<{ team: Team }> = ({ team }) => {
         </div>
         {team.logoUrl && (
           <div className="team-image">
-            <img src={team.logoUrl} alt={`${team.name} logo`} />
+            <img src={team.logoUrl} alt={`${team.name} logo`} style={{ width: '100%'}}/>
           </div>
         )}
       </div>

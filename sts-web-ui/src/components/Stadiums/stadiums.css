@@ -1,4 +1,4 @@
-/* Teams component styles — compact, accessible, responsive */
+/* Stadiums styles: reuse teams layout for consistency */
 .team-list {
   display: grid;
   gap: 12px;
@@ -31,21 +31,15 @@
 .team-card-body {
   display: flex;
   flex-direction: column;
-  /* justify-content: center; */
-  /* align-items: center; */
   justify-content: space-between;
   gap: 12px;
 }
 
 .team-name {
   margin: 0;
-  /* font-size: 16px; */
-  /* color: var(--color-text); */
 }
 
 .team-image img {
-  /* width: 56px; */
-  /* height: 56px; */
   object-fit: cover;
   border-radius: 6px;
   border: 1px solid rgba(17,24,39,0.06);
@@ -116,7 +110,6 @@
   }
 }
 
-/* Create form specific styling to better match project theme */
 .team-create {
   background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%);
   border: 1px solid rgba(255,255,255,0.04);
@@ -151,4 +144,3 @@
 .team-create .logo-preview img {
   max-width: 200px;
 }
-

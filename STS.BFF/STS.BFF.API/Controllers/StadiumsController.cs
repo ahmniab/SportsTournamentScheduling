@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using STS.BFF.API.Dtos;
 using STS.BFF.API.Dtos.Responses;
@@ -17,18 +18,21 @@ public class StadiumsController : ControllerBase
         _stadiumService = stadiumService;
     }
 
-    [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] Guid leagueId)
+    [HttpGet("getByLeagueId/{leagueId}")]
+    public async Task<IActionResult> GetAll([FromRoute] Guid leagueId)
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new GetStadiumsRequest { LeagueId = leagueId.ToString() };
             var response = await _stadiumService.GetStadiumsAsync(request, headers);
             return Ok(response.Stadiums.Select(StadiumDto.From).ToList());
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
@@ -45,13 +49,16 @@ public class StadiumsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new GetStadiumRequest { Id = id.ToString() };
             var response = await _stadiumService.GetStadiumAsync(request, headers);
             return Ok(StadiumDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -72,10 +79,9 @@ public class StadiumsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new CreateStadiumRequest
             {
                 LeagueId = dto.LeagueId.ToString(),
@@ -86,6 +92,10 @@ public class StadiumsController : ControllerBase
             var response = await _stadiumService.CreateStadiumAsync(request, headers);
             var result = StadiumDto.From(response);
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
@@ -102,10 +112,9 @@ public class StadiumsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new UpdateStadiumRequest
             {
                 Id = id.ToString(),
@@ -115,6 +124,10 @@ public class StadiumsController : ControllerBase
 
             var response = await _stadiumService.UpdateStadiumAsync(request, headers);
             return Ok(StadiumDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -135,13 +148,16 @@ public class StadiumsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new DeleteStadiumRequest { Id = id.ToString() };
             await _stadiumService.DeleteStadiumAsync(request, headers);
             return NoContent();
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {

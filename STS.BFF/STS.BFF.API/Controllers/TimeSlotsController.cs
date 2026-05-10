@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using STS.BFF.API.Dtos;
@@ -23,13 +24,16 @@ public class TimeSlotsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
             var request = new GetTimeSlotsRequest { LeagueId = leagueId.ToString() };
             var response = await _timeSlotService.GetTimeSlotsAsync(request, headers);
             return Ok(response.TimeSlots.Select(TimeSlotDto.From).ToList());
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
@@ -46,13 +50,16 @@ public class TimeSlotsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new GetTimeSlotRequest { Id = id.ToString() };
             var response = await _timeSlotService.GetTimeSlotAsync(request, headers);
             return Ok(TimeSlotDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -73,10 +80,9 @@ public class TimeSlotsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new CreateTimeSlotRequest
             {
                 LeagueId = dto.LeagueId.ToString(),
@@ -87,6 +93,10 @@ public class TimeSlotsController : ControllerBase
             var response = await _timeSlotService.CreateTimeSlotAsync(request, headers);
             var result = TimeSlotDto.From(response);
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
@@ -107,10 +117,9 @@ public class TimeSlotsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new UpdateTimeSlotRequest
             {
                 Id = id.ToString(),
@@ -120,6 +129,10 @@ public class TimeSlotsController : ControllerBase
 
             var response = await _timeSlotService.UpdateTimeSlotAsync(request, headers);
             return Ok(TimeSlotDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -140,13 +153,16 @@ public class TimeSlotsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new DeleteTimeSlotRequest { Id = id.ToString() };
             await _timeSlotService.DeleteTimeSlotAsync(request, headers);
             return NoContent();
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {

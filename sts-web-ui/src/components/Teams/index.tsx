@@ -33,7 +33,21 @@ const TeamsList: React.FC<{ leagueId?: string }> = ({ leagueId }) => {
 
   if (loading) return <div role="status">Loading teams…</div>;
 
+  const handleDelete = async (teamId: number | string) => {
+    if (!window.confirm('Are you sure you want to delete this team?')) return;
+    try {
+      await api.delete(`/Teams/${teamId}`);
+      toast.success('Team deleted');
+      setTeams((s) => s.filter((t) => t.id !== teamId));
+    } catch (err) {
+      console.error('Failed to delete team', err);
+      toast.error('Failed to delete team');
+    }
+  };
+
   return (
+    <div className="league-detail" style={{ marginTop: '10px' }}>
+    <h2>Teams</h2>
     <div className="team-list">
       {teams.length === 0 && <div className="empty">No teams yet</div>}
       {teams.map((team) => (
@@ -50,6 +64,7 @@ const TeamsList: React.FC<{ leagueId?: string }> = ({ leagueId }) => {
               <ShowTeam team={team} />
               <div className="team-actions">
                 <button className="btn" onClick={() => setEditingTeamId(team.id)}>Edit</button>
+                <button className="btn" style={{ backgroundColor: 'red'}} onClick={() => handleDelete(team.id)}>Delete</button>
               </div>
             </>
           )}
@@ -59,6 +74,7 @@ const TeamsList: React.FC<{ leagueId?: string }> = ({ leagueId }) => {
       <div className="team team-create">
         <CreateTeamForm leagueId={leagueId} onCreated={(t) => setTeams((s) => [...s, t])} />
       </div>
+    </div>
     </div>
   );
 };
@@ -120,12 +136,13 @@ const CreateTeamForm: React.FC<CreateTeamFormProps> = ({ leagueId, onCreated }) 
       <h3>Create Team</h3>
       <label>
         Name
-        <input value={name} onChange={(e) => setName(e.target.value)} required />
+        <input className="text-box" value={name} onChange={(e) => setName(e.target.value)} required />
       </label>
 
       <label>
         Logo URL
         <input
+          className="text-box"
           placeholder="https://... or leave blank to upload"
           value={logoUrl}
           onChange={(e) => {
@@ -138,7 +155,7 @@ const CreateTeamForm: React.FC<CreateTeamFormProps> = ({ leagueId, onCreated }) 
 
       <label>
         Or upload logo
-        <input type="file" accept="image/*" onChange={handleFileChange} />
+        <input className="text-box" type="file" accept="image/*" onChange={handleFileChange} />
       </label>
 
       {previewUrl && (

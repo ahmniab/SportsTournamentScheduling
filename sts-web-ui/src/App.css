@@ -196,6 +196,21 @@ body {
 .league-actions button[type="submit"] { background: linear-gradient(90deg, var(--color-primary), var(--color-secondary)); color:white; }
 .league-actions button[type="button"] { background: transparent; color: var(--color-text); border: 1px solid rgba(255,255,255,0.04); }
 
+/* Generic text box styles applied via the `text-box` class */
+.text-box {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: rgba(255,255,255,0.02);
+  color: var(--color-text);
+  font-size: 14px;
+}
+.text-box:focus {
+  outline: 3px solid rgba(59,130,246,0.18);
+  box-shadow: 0 4px 12px rgba(59,130,246,0.06);
+}
+
 @media (min-width: 720px) {
   .league-form { grid-template-columns: 1fr 320px; align-items:start; }
   .league-form label { margin:0; }

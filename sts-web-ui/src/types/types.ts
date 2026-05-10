@@ -12,3 +12,12 @@ export type Team = {
   logoUrl?: string;
   createdAt: string;
 };
+
+export type Stadium = {
+  id: string;
+  leagueId: string;
+  name: string;
+  // API sometimes returns `logo` or `logoUrl` — support both
+  logo?: string;
+  logoUrl?: string;
+};

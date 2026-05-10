@@ -1,4 +1,5 @@
 using Grpc.Core;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using STS.BFF.API.Dtos;
@@ -23,13 +24,18 @@ public class TeamsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new GetTeamsRequest { LeagueId = leagueId.ToString() };
             var response = await _teamService.GetTeamsAsync(request, headers);
             return Ok(response.Teams.Select(TeamDto.From).ToList());
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
@@ -54,6 +60,10 @@ public class TeamsController : ControllerBase
             var response = await _teamService.GetTeamAsync(request, headers);
             return Ok(TeamDto.From(response));
         }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
+        }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
             return NotFound();
@@ -73,10 +83,9 @@ public class TeamsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new CreateTeamRequest
             {
                 LeagueId = dto.LeagueId.ToString(),
@@ -87,6 +96,10 @@ public class TeamsController : ControllerBase
             var response = await _teamService.CreateTeamAsync(request, headers);
             var result = TeamDto.From(response);
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
@@ -103,10 +116,9 @@ public class TeamsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
 
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
             var request = new UpdateTeamRequest
             {
                 Id = id.ToString(),
@@ -116,6 +128,10 @@ public class TeamsController : ControllerBase
 
             var response = await _teamService.UpdateTeamAsync(request, headers);
             return Ok(TeamDto.From(response));
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.NotFound)
         {
@@ -136,13 +152,16 @@ public class TeamsController : ControllerBase
     {
         try
         {
-            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            if (userId == null) return Unauthorized();
-
-            var headers = new Metadata { { "x-owner-id", userId.Value } };
+            var accessToken = await HttpContext.GetTokenAsync("access_token");
+            var headers = new Metadata { { "Authorization", $"Bearer {accessToken}" } };
+            
             var request = new DeleteTeamRequest { Id = id.ToString() };
             await _teamService.DeleteTeamAsync(request, headers);
             return NoContent();
+        }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
         }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {

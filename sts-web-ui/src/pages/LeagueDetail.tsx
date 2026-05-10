@@ -2,8 +2,8 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { toast } from 'react-toastify';
-import Team from '../components/Teams/Team';
 import TeamsList from '../components/Teams';
+import StadiumsList from '../components/Stadiums';
 
 function isoToLocalDatetime(iso?: string) {
   if (!iso) return '';
@@ -110,12 +110,13 @@ export default function LeagueDetail(): React.ReactElement {
       <form className="league-form" onSubmit={handleSave}>
         <label>
           Name
-          <input value={name} onChange={(e) => setName(e.target.value)} required />
+          <input className="text-box" value={name} onChange={(e) => setName(e.target.value)} required />
         </label>
 
         <label>
           Start Date (datetime)
           <input
+            className="text-box"
             type="datetime-local"
             value={startDateLocal}
             onChange={(e) => setStartDateLocal(e.target.value)}
@@ -126,6 +127,7 @@ export default function LeagueDetail(): React.ReactElement {
         <label>
           Logo URL
           <input
+            className="text-box"
             placeholder="https://... or leave blank to upload"
             value={logoUrl}
             onChange={(e) => {
@@ -138,7 +140,7 @@ export default function LeagueDetail(): React.ReactElement {
 
         <label>
           Or upload logo
-          <input type="file" accept="image/*" onChange={handleFileChange} />
+          <input className="text-box" type="file" accept="image/*" onChange={handleFileChange} />
         </label>
 
         {previewUrl && (
@@ -154,6 +156,7 @@ export default function LeagueDetail(): React.ReactElement {
       </form>
     </div>
     <TeamsList leagueId={id} />
+    <StadiumsList leagueId={id} />
     </>
   );
 }

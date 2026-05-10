@@ -33,6 +33,10 @@ public class LeaguesController : ControllerBase
             var response = await _leagueService.GetLeaguesAsync(request, headers);
             return Ok(response.Leagues.Select(LeagueSummaryDto.From).ToList());
         }
+        catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.Unauthenticated)
+        {
+            return Unauthorized();
+        }
         catch (RpcException ex) when (ex.StatusCode == global::Grpc.Core.StatusCode.InvalidArgument)
         {
             return BadRequest(ex.Message);
