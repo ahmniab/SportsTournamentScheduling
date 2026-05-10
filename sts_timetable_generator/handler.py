@@ -89,7 +89,7 @@ def format_schedule_result(league_data, scheduler_result):
     ]
 
     return {
-        "LeagueId": league_data["Id"],
+        "Id": league_data["Id"],
         "Matches": matches,
         "BestFitness": scheduler_result["best_fitness"],
         "MatchesCount": scheduler_result["matches_count"],
@@ -112,6 +112,7 @@ def handle_message(redis_client, rabbitmq_client, completed_queue, body, deliver
         return
 
     redis_key = payload.get("RedisKey")
+    league_id = payload.get("LeagueId")
     if not redis_key:
         logger.error("Message missing 'RedisKey' field: %r", payload)
         channel.basic_nack(delivery_tag=delivery_tag, requeue=False)
@@ -124,6 +125,14 @@ def handle_message(redis_client, rabbitmq_client, completed_queue, body, deliver
         logger.error("No data found in Redis for key: %s", redis_key)
         channel.basic_nack(delivery_tag=delivery_tag, requeue=False)
         return
+    
+    league_job_data = redis_client.get_smart(f"jobs:generate_league:{league_id}")
+    if league_job_data is None:
+        logger.error("No data found in Redis for key: %s", redis_key)
+        channel.basic_nack(delivery_tag=delivery_tag, requeue=False)
+        return
+    league_job_data["Status"] = 2  # Mark as Generating
+    redis_client.set_json(f"jobs:generate_league:{league_id}", league_job_data)
 
     redis_client.delete(redis_key)
     logger.info("Deleted prepared key from Redis: %s", redis_key)

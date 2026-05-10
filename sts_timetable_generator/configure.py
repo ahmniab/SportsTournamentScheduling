@@ -1,9 +1,9 @@
 import logging
 import os
 
-from sts_timetable_generator.handler import handle_message
-from sts_timetable_generator.rabbitmq import RabbitMQClient
-from sts_timetable_generator.redis_client import RedisClient
+from handler import handle_message
+from rabbitmq import RabbitMQClient
+from redis_client import RedisClient
 
 logger = logging.getLogger(__name__)
 
