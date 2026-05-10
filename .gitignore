@@ -15,6 +15,7 @@ env/
 
 # IDE
 .idea/
+.junie/
 .vscode/
 *.suo
 *.user
