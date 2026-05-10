@@ -27,6 +27,7 @@
     <Protobuf Include="Protos/Resources/stadium.proto"   GrpcServices="Client" />
     <Protobuf Include="Protos/Resources/team.proto"      GrpcServices="Client" />
     <Protobuf Include="Protos/Resources/timeslot.proto"  GrpcServices="Client" />
+    <Protobuf Include="Protos/timetable.proto"           GrpcServices="Client" />
   </ItemGroup>
 
 </Project>
