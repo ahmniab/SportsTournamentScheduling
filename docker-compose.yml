@@ -55,14 +55,14 @@ services:
 
   keycloak:
     image: quay.io/keycloak/keycloak
-    command: ["start-dev", "--import-realm"]
+    command: ["start-dev"]
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin_password
     ports:
       - "8086:8080"
     volumes:
-      - ./realm-export.json:/opt/keycloak/data/import/Sports Tournament Scheduling-realm.json:ro
+      - ./realm-export.json:/opt/keycloak/data/import/Sports Tournament Scheduling-realm.json
 
   spicedb:
     image: authzed/spicedb:v1.32.0
@@ -96,8 +96,6 @@ services:
       rabbitmq:
         condition: service_healthy
       keycloak:
-        condition: service_started
-      spicedb:
         condition: service_started
     ports:
       - "8081:8080"
@@ -159,7 +157,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       ASPNETCORE_URLS: http://0.0.0.0:8080
-      AuthServer__Url: http://keycloak:8080/realms/sts
+      AuthServer__Url: http://localhost:8086/realms/sts
       AuthServer__MetadataAddress: http://keycloak:8080/realms/sts/.well-known/openid-configuration
       AuthServer__ClientSecret: PgsAA1HxTlLu5G8tt3Y54eKfPFpz2M6s
       AuthServer__Authority: http://keycloak:8080/realms/sts
