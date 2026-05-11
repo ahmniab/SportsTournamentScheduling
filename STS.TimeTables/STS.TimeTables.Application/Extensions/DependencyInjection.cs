@@ -14,6 +14,7 @@ public static class DependencyInjection
         services.AddScoped<GetMatchCommandHandler>();
         services.AddScoped<GenerateTimeTableHandler>();
         services.AddScoped<SaveTimeTableHandler>();
+        services.AddScoped<GetLeagueJobStatusCommandHandler>();
 
         return services;
     }

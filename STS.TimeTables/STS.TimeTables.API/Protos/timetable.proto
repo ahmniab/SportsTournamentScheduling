@@ -8,11 +8,12 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 
 service TimeTablesService {
-  rpc GetLeagueSummary    (LeagueRequest)      returns (GetLeagueSummaryResponse);
-  rpc GetFullLeague       (LeagueRequest)      returns (GetFullLeagueResponse);
-  rpc DeleteLeague        (LeagueRequest)      returns (google.protobuf.Empty);
-  rpc GetMatchRequest     (MatchRequest)       returns (MatchResponse);
+  rpc GetLeagueSummary    (LeagueRequest)                  returns (GetLeagueSummaryResponse);
+  rpc GetFullLeague       (LeagueRequest)                  returns (GetFullLeagueResponse);
+  rpc DeleteLeague        (LeagueRequest)                  returns (google.protobuf.Empty);
+  rpc GetMatchRequest     (MatchRequest)                   returns (MatchResponse);
   rpc GenerateTimeTable   (GenerateTimeTableRequest)       returns (google.protobuf.Empty);
+  rpc GetLeagueJobStatus  (LeagueRequest)                  returns (LeagueJobStatusResponse);
 }
 
 /////////////
@@ -51,4 +52,22 @@ message MatchResponse {
 
 message GenerateTimeTableRequest {
   string league_id = 1;
+}
+
+////////////
+
+message LeagueJobStatusResponse {
+  string league_id = 1;
+  LeagueJobStatus status = 2;
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp started_at = 4;
+  optional string error_message = 5;
+}
+
+enum LeagueJobStatus {
+  CREATED = 0;
+  PREPARED = 1;
+  GENERATING = 2;
+  COMPLETED = 3;
+  FAILED = 4;
 }

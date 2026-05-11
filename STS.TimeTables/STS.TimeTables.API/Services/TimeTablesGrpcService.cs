@@ -10,23 +10,26 @@ namespace STS.TimeTables.API.Services;
 public class TimeTablesGrpcService : TimeTablesService.TimeTablesServiceBase
 {
     private readonly GetLeagueSummaryCommandHandler _getLeagueSummary;
-    private readonly GetFullLeagueCommandHandler    _getFullLeague;
-    private readonly DeleteLeagueCommandHandler     _deleteLeague;
-    private readonly GetMatchCommandHandler         _getMatch;
-    private readonly GenerateTimeTableHandler       _generateTimeTable;
+    private readonly GetFullLeagueCommandHandler _getFullLeague;
+    private readonly DeleteLeagueCommandHandler _deleteLeague;
+    private readonly GetMatchCommandHandler _getMatch;
+    private readonly GenerateTimeTableHandler _generateTimeTable;
+    private readonly GetLeagueJobStatusCommandHandler _getLeagueJobStatus;
 
     public TimeTablesGrpcService(
         GetLeagueSummaryCommandHandler getLeagueSummary,
-        GetFullLeagueCommandHandler    getFullLeague,
-        DeleteLeagueCommandHandler     deleteLeague,
-        GetMatchCommandHandler         getMatch, 
-        GenerateTimeTableHandler  generateTimeTable)
+        GetFullLeagueCommandHandler getFullLeague,
+        DeleteLeagueCommandHandler deleteLeague,
+        GetMatchCommandHandler getMatch,
+        GenerateTimeTableHandler generateTimeTable,
+        GetLeagueJobStatusCommandHandler getLeagueJobStatus)
     {
-        _getLeagueSummary   = getLeagueSummary;
-        _getFullLeague      = getFullLeague;
-        _deleteLeague       = deleteLeague;
-        _getMatch           = getMatch;
+        _getLeagueSummary = getLeagueSummary;
+        _getFullLeague = getFullLeague;
+        _deleteLeague = deleteLeague;
+        _getMatch = getMatch;
         _generateTimeTable = generateTimeTable;
+        _getLeagueJobStatus = getLeagueJobStatus;
     }
 
     public override async Task<GetLeagueSummaryResponse> GetLeagueSummary(
@@ -126,5 +129,26 @@ public class TimeTablesGrpcService : TimeTablesService.TimeTablesServiceBase
         }
 
         return new Empty();
+    }
+
+    public override async Task<LeagueJobStatusResponse> GetLeagueJobStatus(
+        LeagueRequest request, ServerCallContext context)
+    {
+        try
+        {
+            var leagueJob = await _getLeagueJobStatus.Handle(
+                new GetLeagueJobStatusCommand { LeagueId = request.Id },
+                context.CancellationToken);
+
+            return leagueJob.ToJobStatusResponse();
+        }
+        catch (ArgumentException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
+        }
     }
 }
