@@ -1,0 +1,197 @@
+version: "3.9"
+
+services:
+  postgres-resources:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ResourcesDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourWeakPassword
+    volumes:
+      - postgres_resources_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sts -d resources"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-timetables:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: TimeTableDb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: yourWeakPassword
+    volumes:
+      - postgres_timetables_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sts -d timetables"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin_password
+    ports:
+      - "8086:8080"
+    volumes:
+      - ./realm-export.json:/opt/keycloak/data/import/Sports Tournament Scheduling-realm.json:ro
+
+  spicedb:
+    image: authzed/spicedb:v1.32.0
+    command: ["serve", "--grpc-preshared-key=spicedb-secret", "--datastore-engine=memory"]
+
+  resources-api:
+    build:
+      context: .
+      dockerfile: STS.Resources/STS.Resources.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__ResourcesDb: Host=postgres-resources;Port=5432;Database=ResourcesDb;Username=postgres;Password=yourWeakPassword
+      ConnectionStrings__Redis: redis:6379
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: admin
+      RabbitMq__Password: password
+      RabbitMq__VirtualHost: /
+      AuthServer__Authority: http://keycloak:8080/realms/sts
+      AuthServer__MetadataAddress: http://keycloak:8080/realms/sts/.well-known/openid-configuration
+      AuthServer__Audience: sts-api
+      AuthServer__Issuers: http://keycloak:8080/realms/sts
+      AuthzedApi__Url: http://spicedb:50051
+      AuthzedApi__Token: this_is_a_secret_key
+    depends_on:
+      postgres-resources:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+      spicedb:
+        condition: service_started
+    ports:
+      - "8081:8080"
+
+  timetables-api:
+    build:
+      context: .
+      dockerfile: STS.TimeTables/STS.TimeTables.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ConnectionStrings__TimeTableDb: Host=postgres-timetables;Port=5432;Database=TimeTableDb;Username=postgres;Password=yourWeakPassword
+      ConnectionStrings__Redis: redis:6379
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: admin
+      RabbitMq__Password: password
+      RabbitMq__VirtualHost: /
+      AuthServer__Authority: http://keycloak:8080/realms/sts
+      AuthServer__MetadataAddress: http://keycloak:8080/realms/sts/.well-known/openid-configuration
+      AuthServer__Audience: sts-api
+      AuthServer__Issuers: http://keycloak:8080/realms/sts
+    depends_on:
+      postgres-timetables:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+    ports:
+      - "8082:8080"
+
+  timetable-generator:
+    build:
+      context: .
+      dockerfile: sts_timetable_generator/Dockerfile
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_USER: ""
+      REDIS_PASSWORD: ""
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: admin
+      RABBITMQ_PASSWORD: password
+      LOG_LEVEL: DEBUG
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  bff-api:
+    build:
+      context: .
+      dockerfile: STS.BFF/STS.BFF.API/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      AuthServer__Url: http://keycloak:8080/realms/sts
+      AuthServer__MetadataAddress: http://keycloak:8080/realms/sts/.well-known/openid-configuration
+      AuthServer__ClientSecret: PgsAA1HxTlLu5G8tt3Y54eKfPFpz2M6s
+      AuthServer__Authority: http://keycloak:8080/realms/sts
+      AuthServer__Audience: sts-api
+      AuthServer__Issuers__0: http://keycloak:8080/realms/sts
+      GRPC__LeagueServiceBaseUrl: http://resources-api:8080
+      GRPC__StadiumServiceBaseUrl: http://resources-api:8080
+      GRPC__TeamServiceBaseUrl: http://resources-api:8080
+      GRPC__TimeSlotServiceBaseUrl: http://resources-api:8080
+      GRPC__TimeTablesServiceBaseUrl: http://timetables-api:8080
+    depends_on:
+      resources-api:
+        condition: service_started
+      timetables-api:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    ports:
+      - "8080:8080"
+
+  web-ui:
+    build:
+      context: .
+      dockerfile: sts-web-ui/Dockerfile
+      args:
+        REACT_APP_API_BASE_URL: http://localhost:8080
+    depends_on:
+      - bff-api
+    ports:
+      - "3000:8080"
+
+volumes:
+  postgres_resources_data:
+  postgres_timetables_data:
+  redis_data:
