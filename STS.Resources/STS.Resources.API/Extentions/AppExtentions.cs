@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using STS.Resources.API.Services;
 using STS.Resources.Infrastructure.Persistence;
 
@@ -16,7 +17,7 @@ public static class AppExtentions
 
         app.UseAuthentication();
         app.UseAuthorization();
-        
+
         app.MapGrpcService<LeagueGrpcService>()
             .RequireAuthorization();
         app.MapGrpcService<TeamGrpcService>()
@@ -25,7 +26,7 @@ public static class AppExtentions
             .RequireAuthorization();
         app.MapGrpcService<TimeSlotGrpcService>()
             .RequireAuthorization();
-        
+
         return app;
     }
 }

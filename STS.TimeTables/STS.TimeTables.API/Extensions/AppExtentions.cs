@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using STS.TimeTables.API.Services;
 using STS.TimeTables.Infrastructure.Persistence;
 
