@@ -37,6 +37,37 @@ export default function LeaguesPanel(): React.ReactElement {
   if (leagues.length === 0)
     return (
       <div className="leagues-empty">
+        <form
+        className="league-create"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          if (!newName.trim()) return;
+          setCreating(true);
+          try {
+            const payload = { name: newName.trim(), startDate: new Date().toISOString() };
+            const res = await api.post('/Leagues', payload);
+            const created = res.data;
+            setLeagues((s) => [created, ...s]);
+            setNewName('');
+          } catch (err) {
+            // keep simple: set error so user sees something
+            setError(err);
+          } finally {
+            setCreating(false);
+          }
+        }}
+      >
+        <input
+          className="text-box"
+          aria-label="New league name"
+          placeholder="New league name"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+        />
+        <button type="submit" disabled={creating || !newName.trim()} title="Create league">
+          {React.createElement(FiPlus as unknown as React.ComponentType<any>)} Create
+        </button>
+      </form>
         <h2>No leagues yet</h2>
         <p>Create your first league to get started.</p>
       </div>
