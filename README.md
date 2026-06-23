@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# SportsTournamentScheduling
-=======
 # Sports Tournament Scheduling System
 
 Welcome to the Sports Tournament Scheduling (STS) System! This repository contains a microservices-based application designed to manage sports leagues, teams, stadiums, and automatically generate optimal timetables for tournaments.
@@ -92,5 +89,3 @@ Authentication is handled by Keycloak. On startup, Keycloak is bootstrapped with
 - **Messaging**: RabbitMQ
 - **Security**: Keycloak (OIDC), SpiceDB (Zanzibar FGA)
 - **Deployment**: Docker, Docker Compose
-
->>>>>>> 00fed70 (docs: add project documentation, enable PKCE in BFF authentication, and update web UI API base URL in docker-compose)
