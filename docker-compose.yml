@@ -183,7 +183,7 @@ services:
       context: .
       dockerfile: sts-web-ui/Dockerfile
       args:
-        REACT_APP_API_BASE_URL: http://localhost:8080
+        REACT_APP_API_BASE_URL: http://localhost:8080/api
     depends_on:
       - bff-api
     ports:

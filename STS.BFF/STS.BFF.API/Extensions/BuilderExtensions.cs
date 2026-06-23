@@ -60,7 +60,10 @@ public static class BuilderExtensions
                 options.MetadataAddress = builder.Configuration["AuthServer:MetadataAddress"];
                 options.ClientId = "bff-client";
                 options.ClientSecret = builder.Configuration["AuthServer:ClientSecret"];
+                
                 options.ResponseType = "code";
+                options.UsePkce = true;
+                
                 options.SaveTokens = true;
                 options.GetClaimsFromUserInfoEndpoint = true;
                 options.RequireHttpsMetadata = false;
