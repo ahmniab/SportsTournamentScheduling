@@ -5,6 +5,9 @@ Welcome to the Sports Tournament Scheduling (STS) System! This repository contai
 ## 🏗 Architecture Overview
 
 The system is built using a modern microservices architecture with a combination of .NET Core for APIs, Python for heavy computational scheduling, and React for the frontend.
+<div align="center">
+ <img width="80%" src="media/images/architecture.svg">
+</div>
 
 ### Microservices
 
